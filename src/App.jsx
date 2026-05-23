@@ -126,6 +126,7 @@ function parseMetaRows(headers, rows) {
   const salesIdx = findColIdx(headers, ["purchase conversion value", "conversion value", "revenue", "value"]);
   const purchasesIdx = findColIdx(headers, ["website purchases", "purchases", "conversions"]);
   const campaignIdx = findColIdx(headers, ["campaign name", "campaign"]);
+  const dateIdx = findColIdx(headers, ["reporting starts", "day", "date", "report date", "reporting"]);
 
   const ads = [];
   for (const row of rows) {
@@ -137,8 +138,9 @@ function parseMetaRows(headers, rows) {
     if (!name || spend <= 0) continue;
     const product = extractProduct(name, campaign);
     const type = extractAdType(name);
-    const roas = spend > 0 && sales > 0 ? sales / spend : 0;
-    ads.push({ name, spend, sales, purchases, roas, product, type });
+    const reas = spend > 0 && sales > 0 ? sales / spend : 0;
+    const date = dateIdx >= 0 ? String(row[dateIdx] || "").trim() : "";
+    ads.push({ name, spend, sales, purchases, roas, product, type, date });
   }
   return ads;
 }
@@ -192,6 +194,44 @@ function computeProductTotals(ads) {
     roas: allSpend > 0 && allSales > 0 ? allSales / allSpend : 0,
   };
   return result;
+}
+
+// ─── DAILY AGGREGATION (LOOKER STUDIO) ──────────────────────────────────────
+function computeDailyBlended(ads) {
+  const byDate = {};
+  for (const ad of ads) {
+    const d = ad.date || "Unknown";
+    if (!byDate[d]) byDate[d] = { date: d, spend: 0, sales: 0, purchases: 0 };
+    byDate[d].spend += ad.spend;
+    byDate[d].sales += ad.sales;
+    byDate[d].purchases += ad.purchases;
+  }
+  return Object.values(byDate)
+    .map((d) => ({
+      ...d,
+      roas: d.spend > 0 && d.sales > 0 ? d.sales / d.spend : 0,
+      cpa: d.purchases > 0 ? d.spend / d.purchases : 0,
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+}
+
+function computeDailyByProduct(ads) {
+  const map = {};
+  for (const ad of ads) {
+    const d = ad.date || "Unknown";
+    const key = `${d}||${ad.product}`;
+    if (!map[key]) map[key] = { date: d, product: ad.product, spend: 0, sales: 0, purchases: 0 };
+    map[key].spend += ad.spend;
+    map[key].sales += ad.sales;
+    map[key].purchases += ad.purchases;
+  }
+  return Object.values(map)
+    .map((d) => ({
+      ...d,
+      roas: d.spend > 0 && d.sales > 0 ? d.sales / d.spend : 0,
+      cpa: d.purchases > 0 ? d.spend / d.purchases : 0,
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date) || a.product.localeCompare(b.product));
 }
 
 // ─── FORMATTERS ─────────────────────────────────────────────────────────────
@@ -320,6 +360,115 @@ function UploadZone({ onData, onDemo }) {
   );
 }
 
+
+// ─── UI: LOOKER STUDIO VIEW ──────────────────────────────────────────────────
+function LookerStudioView({ metaAds }) {
+  const blended = useMemo(() => computeDailyBlended(metaAds), [metaAds]);
+  const byProduct = useMemo(() => computeDailyByProduct(metaAds), [metaAds]);
+  const hasDate = blended.length > 0 && blended[0].date !== "Unknown";
+
+  const thStyle = {
+    padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+    letterSpacing: "0.5px", color: "rgba(255,255,255,0.35)", textAlign: "right",
+    borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap",
+  };
+  const thLeft = { ...thStyle, textAlign: "left" };
+  const td = (align = "right") => ({
+    padding: "10px 12px", fontSize: 13,
+    fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)",
+    textAlign: align,
+  });
+
+  if (!hasDate) {
+    return (
+      <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>
+        ⚠️ No date column found in your data.
+        <div style={{ marginTop: 8, fontSize: 12 }}>
+          Make sure your Meta Ads export includes a <strong style={{ color: "rgba(255,255,255,0.5)" }}>Reporting Starts</strong> or <strong style={{ color: "rgba(255,255,255,0.5)" }}>Day</strong> column.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+
+      {/* ── Blended Day-wise ── */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 16 }}>
+          Blended Day-wise Performance
+          <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.35)", marginLeft: 8 }}>All products combined</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 2px" }}>
+            <thead>
+              <tr>
+                <th style={thLeft}>Date</th>
+                <th style={thStyle}>Spend</th>
+                <th style={thStyle}>Revenue</th>
+                <th style={thStyle}>ROAS</th>
+                <th style={thStyle}>Orders</th>
+                <th style={thStyle}>CPA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {blended.map((row, i) => (
+                <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
+                  <td style={{ ...td("left"), color: "#fff", fontWeight: 600 }}>{row.date}</td>
+                  <td style={td()}>{fmtFull(row.spend)}</td>
+                  <td style={td()}>{fmtFull(row.sales)}</td>
+                  <td style={{ ...td(), textAlign: "right" }}><RoasBadge value={row.roas} /></td>
+                  <td style={{ ...td(), color: "#fff", fontWeight: 600 }}>{row.purchases.toLocaleString("en-IN")}</td>
+                  <td style={td()}>{row.cpa > 0 ? fmtFull(row.cpa) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Bifurcated Day-wise ── */}
+      <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 16 }}>
+          Day-wise by Product
+          <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.35)", marginLeft: 8 }}>Bifurcated</span>
+        </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 2px" }}>
+            <thead>
+              <tr>
+                <th style={thLeft}>Date</th>
+                <th style={thLeft}>Product</th>
+                <th style={thStyle}>Spend</th>
+                <th style={thStyle}>Revenue</th>
+                <th style={thStyle}>ROAS</th>
+                <th style={thStyle}>Orders</th>
+                <th style={thStyle}>CPA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byProduct.map((row, i) => (
+                <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
+                  <td style={{ ...td("left"), color: "rgba(255,255,255,0.6)" }}>{row.date}</td>
+                  <td style={{ padding: "10px 12px" }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: PRODUCT_COLORS[row.product] || "#888", background: `${PRODUCT_COLORS[row.product] || "#888"}15`, padding: "3px 8px", borderRadius: 4 }}>{row.product}</span>
+                  </td>
+                  <td style={td()}>{fmtFull(row.spend)}</td>
+                  <td style={td()}>{fmtFull(row.sales)}</td>
+                  <td style={{ ...td(), textAlign: "right" }}><RoasBadge value={row.roas} /></td>
+                  <td style={{ ...td(), color: "#fff", fontWeight: 600 }}>{row.purchases.toLocaleString("en-IN")}</td>
+                  <td style={td()}>{row.cpa > 0 ? fmtFull(row.cpa) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
 // ─── MAIN DASHBOARD ─────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [metaAds, setMetaAds] = useState(null);
@@ -331,6 +480,7 @@ export default function Dashboard() {
   const [sortField, setSortField] = useState("spend");
   const [sortDir, setSortDir] = useState("desc");
   const [adTypeFilter, setAdTypeFilter] = useState("All");
+  const [activeView, setActiveView] = useState("dashboard");
 
   const hasData = metaAds !== null;
 
@@ -436,13 +586,35 @@ export default function Dashboard() {
             {isDemo ? "DEMO MODE" : hasData ? "LIVE DATA" : "NO DATA"}
           </div>
         </div>
+        {hasData && (
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 4, border: "1px solid rgba(255,255,255,0.06)" }}>
+            {[{ id: "dashboard", label: "📊 Dashboard" }, { id: "looker", label: "📅 Looker Studio" }].map(({ id, label }) => (
+              <button
+                key={id}
+                onClick={() => setActiveView(id)}
+                style={{
+                  padding: "6px 16px", borderRadius: 7, fontSize: 12, fontWeight: 600,
+                  cursor: "pointer", border: "none", fontFamily: "inherit",
+                  background: activeView === id ? "rgba(200,162,248,0.15)" : "transparent",
+                  color: activeView === id ? "#c8a2f8" : "rgba(255,255,255,0.4)",
+                  transition: "all 0.15s",
+                }}
+              >{label}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── UPLOAD ZONE (no data state) ── */}
       {!hasData && <UploadZone onData={handleFileData} onDemo={loadDemo} />}
 
+      {/* ── LOOKER STUDIO VIEW ── */}
+      {hasData && activeView === "looker" && (
+        <LookerStudioView metaAds={metaAds} />
+      )}
+
       {/* ── DASHBOARD ── */}
-      {hasData && (
+      {hasData && activeView === "dashboard" && (
         <>
           {/* Product Tabs */}
           <div style={{ display: "flex", gap: 6, marginBottom: 24, overflowX: "auto", paddingBottom: 4 }}>
@@ -545,11 +717,11 @@ export default function Dashboard() {
                       { key: "type", label: "Type", align: "center", sortable: false },
                       { key: "spend", label: "Spend", align: "right", sortable: true },
                       { key: "sales", label: "Revenue", align: "right", sortable: true },
-                      { key: "purchases", label: "Orders", align: "right", sortable: true },
+                      { key: "purchases", label: "Orders", aligf: "right", sortable: true },
                       { key: "roas", label: "ROAS", align: "right", sortable: true },
                     ].map((col) => (
-                      <th key={col.key} onClick={() => col.sortable && handleSort(col.key)} style={{
-                        padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px",
+                      <th key={ col.key} col.sortable && handleSort($col.key)) => col.label,
+                       padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px",
                         color: "rgba(255,255,255,0.35)", textAlign: col.align,
                         cursor: col.sortable ? "pointer" : "default",
                         borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap", userSelect: "none",
@@ -559,8 +731,8 @@ export default function Dashboard() {
                     ))}
                     <th style={{ padding: "10px 12px", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>SPEND SHARE</th>
                   </tr>
-                </thead>
-                <tbody>
+                </tdax>
+                 <tbody>
                   {filteredAds.map((ad, i) => (
                     <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
                       <td style={{ padding: "11px 12px", fontSize: 13, fontWeight: 500, maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#fff" }}>{ad.name}</td>
@@ -571,7 +743,7 @@ export default function Dashboard() {
                         <span style={{
                           fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px",
                           color: ad.type === "Doctor" ? "#60d394" : ad.type === "Static" ? "#5ca4f7" : "#fbbf24",
-                          background: ad.type === "Doctor" ? "rgba(96,211,148,0.1)" : ad.type === "Static" ? "rgba(92,164,247,0.1)" : "rgba(251,191,36,0.1)",
+                                   background: ad.type === "Doctor" ? "rgba(96,211,148,0.1)" : ad.type === "Static" ? "rgba(92,164,247,0.1)" : "rgba(251,191,36,0.1)",
                           padding: "3px 8px", borderRadius: 4,
                         }}>{ad.type}</span>
                       </td>
@@ -591,7 +763,7 @@ export default function Dashboard() {
           </div>
 
           <div style={{ textAlign: "center", padding: "24px 0 8px", fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-            {isDemo ? "Demo data · " : `${fileName} · `	}ROAS = Reported conversion value ÷ spend · Better Herbs Dashboard v2
+            {isDemo ? "Demo data · " : `${fileName} · `}ROAS = Reported conversion value ÷ spend · Better Herbs Dashboard v2
           </div>
         </>
       )}
