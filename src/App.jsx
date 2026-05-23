@@ -731,7 +731,7 @@ export default function Dashboard() {
                     ))}
                     <th style={{ padding: "10px 12px", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.35)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>SPEND SHARE</th>
                   </tr>
-                </tdax>
+                </thead>
                  <tbody>
                   {filteredAds.map((ad, i) => (
                     <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
