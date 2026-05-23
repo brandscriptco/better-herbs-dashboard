@@ -720,7 +720,7 @@ export default function Dashboard() {
                       { key: "purchases", label: "Orders", aligf: "right", sortable: true },
                       { key: "roas", label: "ROAS", align: "right", sortable: true },
                     ].map((col) => (
-                      <th key={ col.key} col.sortable && handleSort($col.key)) => col.label,
+                      <th key={col.key} onClick={() => col.sortable && handleSort(col.key)} style={{
                        padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px",
                         color: "rgba(255,255,255,0.35)", textAlign: col.align,
                         cursor: col.sortable ? "pointer" : "default",
