@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import * as XLSX from "xlsx";
 
-// âââ CONSTANTS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── CONSTANTS ─────────────────────────────────────────────────────────────
 const PRODUCTS = ["All Products", "Lactify", "Brainfy Powder", "Brainfy Drops", "Mamafy", "Flow Joy Drops"];
 
 const PRODUCT_COLORS = {
@@ -14,7 +14,7 @@ const PRODUCT_COLORS = {
   "Other": "#888",
 };
 
-// âââ DEMO DATA ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── DEMO DATA ──────────────────────────────────────────────────────────────
 const DEMO_ADS = [
   { product: "Lactify", name: "Lactify_Dr. Nayana", spend: 29920.97, sales: 107868, purchases: 124, roas: 3.61, type: "Doctor" },
   { product: "Lactify", name: "Lactify - 2nd Doctor Compilation", spend: 12600.59, sales: 18336, purchases: 22, roas: 1.48, type: "Doctor" },
@@ -86,7 +86,7 @@ const DEMO_ADS = [
 
 const DEMO_GOOGLE = { spend: 47604.54, sales: 505685.75, purchases: 471, roas: 8.82 };
 
-// âââ PARSING HELPERS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── PARSING HELPERS ────────────────────────────────────────────────────────
 function extractProduct(adName, campaignName) {
   for (const src of [(adName || "").toLowerCase(), (campaignName || "").toLowerCase()]) {
     if (src.includes("lactify")) return "Lactify";
@@ -116,7 +116,7 @@ function findColIdx(headers, candidates) {
 
 function cleanNum(val) {
   if (val === null || val === undefined || val === "") return 0;
-  const s = String(val).replace(/[â¹,\s]/g, "").replace(/[^0-9.-]/g, "");
+  const s = String(val).replace(/[₹,\s]/g, "").replace(/[^0-9.-]/g, "");
   return parseFloat(s) || 0;
 }
 
@@ -171,7 +171,7 @@ function sheetToHeadersRows(sheet) {
   return { headers, rows };
 }
 
-// âââ AGGREGATION ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── AGGREGATION ────────────────────────────────────────────────────────────
 function computeProductTotals(ads) {
   const totals = {};
   for (const ad of ads) {
@@ -194,15 +194,15 @@ function computeProductTotals(ads) {
   return result;
 }
 
-// âââ FORMATTERS âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── FORMATTERS ─────────────────────────────────────────────────────────────
 const fmt = (n) => {
-  if (n >= 100000) return `â¹${(n / 100000).toFixed(2)}L`;
-  if (n >= 1000) return `â¹${(n / 1000).toFixed(1)}K`;
-  return `â¹${n.toFixed(0)}`;
+  if (n >= 100000) return `₹${(n / 100000).toFixed(2)}L`;
+  if (n >= 1000) return `₹${(n / 1000).toFixed(1)}K`;
+  return `₹${n.toFixed(0)}`;
 };
-const fmtFull = (n) => `â¹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+const fmtFull = (n) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-// âââ UI: ROAS BADGE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UI: ROAS BADGE ─────────────────────────────────────────────────────────
 function RoasBadge({ value }) {
   const color = value >= 3 ? "#34d399" : value >= 2 ? "#fbbf24" : "#f87171";
   const bg = value >= 3 ? "rgba(52,211,153,0.12)" : value >= 2 ? "rgba(251,191,36,0.12)" : "rgba(248,113,113,0.12)";
@@ -213,7 +213,7 @@ function RoasBadge({ value }) {
   );
 }
 
-// âââ UI: MINI BAR âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UI: MINI BAR ───────────────────────────────────────────────────────────
 function MiniBar({ value, max }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   return (
@@ -223,7 +223,7 @@ function MiniBar({ value, max }) {
   );
 }
 
-// âââ UI: UPLOAD ZONE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── UI: UPLOAD ZONE ────────────────────────────────────────────────────────
 function UploadZone({ onData, onDemo }) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
@@ -274,20 +274,20 @@ function UploadZone({ onData, onDemo }) {
       >
         <input ref={inputRef} type="file" accept=".xlsx,.xls,.csv" onChange={(e) => { const f = e.target.files[0]; if (f) processFile(f); }} style={{ display: "none" }} />
         {loading ? (
-          <div style={{ color: "#c8a2f8", fontSize: 14, fontWeight: 600 }}>â³ Reading fileâ¦</div>
+          <div style={{ color: "#c8a2f8", fontSize: 14, fontWeight: 600 }}>⏳ Reading file…</div>
         ) : (
           <>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>ð</div>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>
               Drop your Excel file here, or click to browse
             </div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", lineHeight: 1.8 }}>
               Accepts <strong style={{ color: "rgba(255,255,255,0.6)" }}>.xlsx</strong> files
               <br />
-              <strong style={{ color: "rgba(255,255,255,0.5)" }}>Sheet 1</strong> â Meta Ads data &nbsp;Â·&nbsp;
-              <strong style={{ color: "rgba(255,255,255,0.5)" }}>Sheet 2</strong> â Google Ads data (optional)
+              <strong style={{ color: "rgba(255,255,255,0.5)" }}>Sheet 1</strong> → Meta Ads data &nbsp;·&nbsp;
+              <strong style={{ color: "rgba(255,255,255,0.5)" }}>Sheet 2</strong> → Google Ads data (optional)
               <br />
-              Required columns: <em>Ad Name Â· Amount Spent Â· Purchase Conversion Value Â· Website Purchases</em>
+              Required columns: <em>Ad Name · Amount Spent · Purchase Conversion Value · Website Purchases</em>
             </div>
           </>
         )}
@@ -295,7 +295,7 @@ function UploadZone({ onData, onDemo }) {
 
       {error && (
         <div style={{ marginTop: 10, padding: "10px 14px", borderRadius: 8, background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171", fontSize: 13 }}>
-          â ï¸ {error}
+          ⚠️ {error}
         </div>
       )}
 
@@ -313,14 +313,14 @@ function UploadZone({ onData, onDemo }) {
             cursor: "pointer", fontFamily: "inherit",
           }}
         >
-          Load Demo Data (May 1â19, 2026)
+          Load Demo Data (May 1–19, 2026)
         </button>
       </div>
     </div>
   );
 }
 
-// âââ MAIN DASHBOARD âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── MAIN DASHBOARD ─────────────────────────────────────────────────────────
 export default function Dashboard() {
   const [metaAds, setMetaAds] = useState(null);
   const [googleData, setGoogleData] = useState(null);
@@ -383,8 +383,8 @@ export default function Dashboard() {
   };
 
   const SortIcon = ({ field }) => {
-    if (sortField !== field) return <span style={{ opacity: 0.3, fontSize: 10 }}>â</span>;
-    return <span style={{ fontSize: 10 }}>{sortDir === "desc" ? "â" : "â"}</span>;
+    if (sortField !== field) return <span style={{ opacity: 0.3, fontSize: 10 }}>⇅</span>;
+    return <span style={{ fontSize: 10 }}>{sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
   const cpa = productData.purchases > 0 ? productData.spend / productData.purchases : 0;
@@ -403,27 +403,27 @@ export default function Dashboard() {
         button:hover { opacity: 0.8; }
       `}</style>
 
-      {/* ââ HEADER ââ */}
+      {/* ── HEADER ── */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: hasData ? "#34d399" : "#444", boxShadow: hasData ? "0 0 10px #34d399" : "none", transition: "all 0.3s" }} />
             <h1 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: "#fff" }}>
-              Better Herbs â Performance Dashboard
+              Better Herbs — Performance Dashboard
             </h1>
           </div>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4, marginLeft: 18 }}>
             {isDemo
-              ? "Demo data Â· May 1â19, 2026 Â· Meta + Google Ads"
+              ? "Demo data · May 1–19, 2026 · Meta + Google Ads"
               : hasData
-              ? `Live data Â· ${fileName} Â· Meta${googleData ? " + Google" : " only"}`
+              ? `Live data · ${fileName} · Meta${googleData ? " + Google" : " only"}`
               : "Upload your Excel file below to populate the dashboard"}
           </p>
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {hasData && (
             <button onClick={clearData} style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)" }}>
-              â Change File
+              ↑ Change File
             </button>
           )}
           <div style={{
@@ -438,10 +438,10 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ââ UPLOAD ZONE (no data state) ââ */}
+      {/* ── UPLOAD ZONE (no data state) ── */}
       {!hasData && <UploadZone onData={handleFileData} onDemo={loadDemo} />}
 
-      {/* ââ DASHBOARD ââ */}
+      {/* ── DASHBOARD ── */}
       {hasData && (
         <>
           {/* Product Tabs */}
@@ -464,9 +464,9 @@ export default function Dashboard() {
             {[
               { label: "Meta Spend", value: fmtFull(productData.spend), sub: selectedProduct },
               { label: "Meta Revenue", value: fmtFull(productData.sales), sub: "Reported" },
-              { label: "Meta ROAS", value: `${productData.roas.toFixed(2)}x`, sub: productData.roas >= 2.5 ? "â Healthy" : "â  Needs Work", highlight: true },
-              { label: "Purchases", value: productData.purchases.toLocaleString("en-IN"), sub: cpa > 0 ? `CPA: ${fmtFull(cpa)}` : "â" },
-              { label: "Google Ads", value: gd.spend > 0 ? `${gd.roas.toFixed(2)}x` : "â", sub: gd.spend > 0 ? `${fmt(gd.spend)} spend` : "No Google data" },
+              { label: "Meta ROAS", value: `${productData.roas.toFixed(2)}x`, sub: productData.roas >= 2.5 ? "✓ Healthy" : "⚠ Needs Work", highlight: true },
+              { label: "Purchases", value: productData.purchases.toLocaleString("en-IN"), sub: cpa > 0 ? `CPA: ${fmtFull(cpa)}` : "—" },
+              { label: "Google Ads", value: gd.spend > 0 ? `${gd.roas.toFixed(2)}x` : "—", sub: gd.spend > 0 ? `${fmt(gd.spend)} spend` : "No Google data" },
             ].map((m, i) => (
               <div key={i} style={{
                 background: m.highlight
@@ -527,10 +527,10 @@ export default function Dashboard() {
             </div>
 
             <div style={{ position: "relative", marginBottom: 16 }}>
-              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>ð</span>
+              <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>🔍</span>
               <input
                 type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by creator, ad name, or productâ¦"
+                placeholder="Search by creator, ad name, or product…"
                 style={{ width: "100%", padding: "12px 16px 12px 40px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", color: "#e8e6f0", fontSize: 14, outline: "none" }}
               />
             </div>
@@ -591,7 +591,7 @@ export default function Dashboard() {
           </div>
 
           <div style={{ textAlign: "center", padding: "24px 0 8px", fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-            {isDemo ? "Demo data Â· " : `${fileName} Â· `}ROAS = Reported conversion value Ã· spend Â· Better Herbs Dashboard v2
+            {isDemo ? "Demo data · " : `${fileName} · `	}ROAS = Reported conversion value ÷ spend · Better Herbs Dashboard v2
           </div>
         </>
       )}
