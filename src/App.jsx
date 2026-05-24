@@ -2,13 +2,13 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import * as XLSX from "xlsx";
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────
-const PRODUCTS = ["All Products", "Lactify", "Brainfy Powder", "Brainfy Drops", "Mamafy", "Flow Joy Drops"];
+const PRODUCTS = ["All Products", "Lactify", "Brainify Powder", "Brainify Drops", "Mamafy", "Flow Joy Drops"];
 
 const PRODUCT_COLORS = {
   "All Products": "#c8a2f8",
   "Lactify": "#60d394",
-  "Brainfy Powder": "#5ca4f7",
-  "Brainfy Drops": "#f7a75c",
+  "Brainify Powder": "#5ca4f7",
+  "Brainify Drops": "#f7a75c",
   "Mamafy": "#f76b8a",
   "Flow Joy Drops": "#5cf7e0",
   "Other": "#888",
@@ -30,40 +30,40 @@ const DEMO_ADS = [
   { product: "Lactify", name: "Lactify - Dr. Priyanka (2nd)", spend: 1587.13, sales: 7689, purchases: 11, roas: 4.93, type: "Doctor" },
   { product: "Lactify", name: "Lactify - Dr. Anuradha", spend: 960.49, sales: 1298, purchases: 2, roas: 1.35, type: "Doctor" },
   { product: "Lactify", name: "Lactify - Mother Compilation", spend: 929.65, sales: 2446, purchases: 3, roas: 2.63, type: "UGC" },
-  { product: "Brainfy Drops", name: "Drops - Maninder Kaur (Blessings) Video", spend: 76725.88, sales: 247220.45, purchases: 320, roas: 3.22, type: "UGC" },
-  { product: "Brainfy Drops", name: "Drops - Dr. Vinod Video", spend: 71320.64, sales: 204505.20, purchases: 276, roas: 2.87, type: "Doctor" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Dr. Sajid", spend: 42538.74, sales: 125683, purchases: 169, roas: 2.95, type: "Doctor" },
-  { product: "Brainfy Drops", name: "Drops - Static 7", spend: 31810.78, sales: 94990.60, purchases: 119, roas: 2.99, type: "Static" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Dr. Sajid (2nd)", spend: 31295.22, sales: 76436, purchases: 106, roas: 2.44, type: "Doctor" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Rajmani", spend: 16589.64, sales: 38827, purchases: 56, roas: 2.34, type: "UGC" },
-  { product: "Brainfy Drops", name: "Drops - Dr. Maninder Kaur (Copycat Brand)", spend: 11199.54, sales: 27172.20, purchases: 32, roas: 2.43, type: "Doctor" },
-  { product: "Brainfy Drops", name: "Mothers Day - Drops", spend: 10533.15, sales: 40082, purchases: 43, roas: 3.80, type: "Static" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Static 11", spend: 9856.68, sales: 20245, purchases: 24, roas: 2.05, type: "Static" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Static 12", spend: 9766.42, sales: 32583, purchases: 43, roas: 3.34, type: "Static" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Static 3", spend: 8924.17, sales: 22710, purchases: 26, roas: 2.54, type: "Static" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Rajmani Patel Edited", spend: 7933.11, sales: 17268, purchases: 19, roas: 2.18, type: "UGC" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Dr. Neha", spend: 5104.66, sales: 12911, purchases: 15, roas: 2.53, type: "Doctor" },
-  { product: "Brainfy Drops", name: "Brainfy Drops - Static 8", spend: 5534.29, sales: 12605, purchases: 15, roas: 2.28, type: "Static" },
+  { product: "Brainify Drops", name: "Drops - Maninder Kaur (Blessings) Video", spend: 76725.88, sales: 247220.45, purchases: 320, roas: 3.22, type: "UGC" },
+  { product: "Brainify Drops", name: "Drops - Dr. Vinod Video", spend: 71320.64, sales: 204505.20, purchases: 276, roas: 2.87, type: "Doctor" },
+  { product: "Brainify Drops", name: "Brainify Drops - Dr. Sajid", spend: 42538.74, sales: 125683, purchases: 169, roas: 2.95, type: "Doctor" },
+  { product: "Brainify Drops", name: "Drops - Static 7", spend: 31810.78, sales: 94990.60, purchases: 119, roas: 2.99, type: "Static" },
+  { product: "Brainify Drops", name: "Brainify Drops - Dr. Sajid (2nd)", spend: 31295.22, sales: 76436, purchases: 106, roas: 2.44, type: "Doctor" },
+  { product: "Brainify Drops", name: "Brainify Drops - Rajmani", spend: 16589.64, sales: 38827, purchases: 56, roas: 2.34, type: "UGC" },
+  { product: "Brainify Drops", name: "Drops - Dr. Maninder Kaur (Copycat Brand)", spend: 11199.54, sales: 27172.20, purchases: 32, roas: 2.43, type: "Doctor" },
+  { product: "Brainify Drops", name: "Mothers Day - Drops", spend: 10533.15, sales: 40082, purchases: 43, roas: 3.80, type: "Static" },
+  { product: "Brainify Drops", name: "Brainify Drops - Static 11", spend: 9856.68, sales: 20245, purchases: 24, roas: 2.05, type: "Static" },
+  { product: "Brainify Drops", name: "Brainify Drops - Static 12", spend: 9766.42, sales: 32583, purchases: 43, roas: 3.34, type: "Static" },
+  { product: "Brainify Drops", name: "Brainify Drops - Static 3", spend: 8924.17, sales: 22710, purchases: 26, roas: 2.54, type: "Static" },
+  { product: "Brainify Drops", name: "Brainify Drops - Rajmani Patel Edited", spend: 7933.11, sales: 17268, purchases: 19, roas: 2.18, type: "UGC" },
+  { product: "Brainify Drops", name: "Brainify Drops - Dr. Neha", spend: 5104.66, sales: 12911, purchases: 15, roas: 2.53, type: "Doctor" },
+  { product: "Brainify Drops", name: "Brainify Drops - Static 8", spend: 5534.29, sales: 12605, purchases: 15, roas: 2.28, type: "Static" },
   { product: "Flow Joy Drops", name: "FlowJoy Drops - Static 2", spend: 27785.57, sales: 54363.40, purchases: 60, roas: 1.96, type: "Static" },
   { product: "Flow Joy Drops", name: "Flow Drop - Dr. Ankit", spend: 22315.49, sales: 43853, purchases: 52, roas: 1.97, type: "Doctor" },
   { product: "Flow Joy Drops", name: "Flow Drop - Dispatch Video", spend: 19097.73, sales: 34730, purchases: 46, roas: 1.82, type: "UGC" },
   { product: "Flow Joy Drops", name: "Flow Drops - Dr. Sushma Mogri", spend: 9063.66, sales: 15289, purchases: 21, roas: 1.69, type: "Doctor" },
   { product: "Flow Joy Drops", name: "FlowJoy Drops - Dr. Garima", spend: 5889.86, sales: 23955, purchases: 36, roas: 4.07, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Divya Bajpai", spend: 62595.97, sales: 211753.82, purchases: 244, roas: 3.38, type: "UGC" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Static 13 (Ingredients)", spend: 48015.05, sales: 139503.40, purchases: 167, roas: 2.91, type: "Static" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Ankit Jha Video", spend: 36147.68, sales: 134105.96, purchases: 167, roas: 3.71, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Vinod 2", spend: 34148.19, sales: 121652, purchases: 160, roas: 3.56, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Vinod Post ID", spend: 21521.84, sales: 52808, purchases: 67, roas: 2.45, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Pushpendra 2nd", spend: 16791.22, sales: 37857, purchases: 50, roas: 2.25, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Prachi Mahajan", spend: 16488.92, sales: 46782, purchases: 49, roas: 2.84, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Doctor Compilation 2", spend: 12692.45, sales: 43337, purchases: 55, roas: 3.41, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Static 11", spend: 7369.96, sales: 13779, purchases: 20, roas: 1.87, type: "Static" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - USP Static", spend: 7243.52, sales: 28133.20, purchases: 34, roas: 3.88, type: "Static" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Ankit Jha (2nd)", spend: 6841.49, sales: 17435, purchases: 24, roas: 2.55, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Static 12", spend: 6838.35, sales: 28006, purchases: 34, roas: 4.10, type: "Static" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Maninder Kaur (Blessings)", spend: 4125.93, sales: 8876, purchases: 13, roas: 2.15, type: "UGC" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Riya", spend: 3519.23, sales: 7343, purchases: 7, roas: 2.09, type: "Doctor" },
-  { product: "Brainfy Powder", name: "Brainfy Powder - Dr. Suryakamal", spend: 3290.11, sales: 4374, purchases: 6, roas: 1.33, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Divya Bajpai", spend: 62595.97, sales: 211753.82, purchases: 244, roas: 3.38, type: "UGC" },
+  { product: "Brainify Powder", name: "Brainify Powder - Static 13 (Ingredients)", spend: 48015.05, sales: 139503.40, purchases: 167, roas: 2.91, type: "Static" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit Jha Video", spend: 36147.68, sales: 134105.96, purchases: 167, roas: 3.71, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Vinod 2", spend: 34148.19, sales: 121652, purchases: 160, roas: 3.56, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Vinod Post ID", spend: 21521.84, sales: 52808, purchases: 67, roas: 2.45, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Pushpendra 2nd", spend: 16791.22, sales: 37857, purchases: 50, roas: 2.25, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Prachi Mahajan", spend: 16488.92, sales: 46782, purchases: 49, roas: 2.84, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Doctor Compilation 2", spend: 12692.45, sales: 43337, purchases: 55, roas: 3.41, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Static 11", spend: 7369.96, sales: 13779, purchases: 20, roas: 1.87, type: "Static" },
+  { product: "Brainify Powder", name: "Brainify Powder - USP Static", spend: 7243.52, sales: 28133.20, purchases: 34, roas: 3.88, type: "Static" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit Jha (2nd)", spend: 6841.49, sales: 17435, purchases: 24, roas: 2.55, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Static 12", spend: 6838.35, sales: 28006, purchases: 34, roas: 4.10, type: "Static" },
+  { product: "Brainify Powder", name: "Brainify Powder - Maninder Kaur (Blessings)", spend: 4125.93, sales: 8876, purchases: 13, roas: 2.15, type: "UGC" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Riya", spend: 3519.23, sales: 7343, purchases: 7, roas: 2.09, type: "Doctor" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Suryakamal", spend: 3290.11, sales: 4374, purchases: 6, roas: 1.33, type: "Doctor" },
   { product: "Mamafy", name: "Mamafy - Dr. Garima", spend: 28464.37, sales: 79689, purchases: 101, roas: 2.80, type: "Doctor" },
   { product: "Mamafy", name: "Mamafy - Static 13", spend: 23968.92, sales: 59926, purchases: 75, roas: 2.50, type: "Static" },
   { product: "Mamafy", name: "Mamafy - Dr. Shaifali", spend: 23065.44, sales: 68987, purchases: 88, roas: 2.99, type: "Doctor" },
@@ -90,11 +90,12 @@ const DEMO_GOOGLE = { spend: 47604.54, sales: 505685.75, purchases: 471, roas: 8
 function extractProduct(adName, campaignName) {
   for (const src of [(adName || "").toLowerCase(), (campaignName || "").toLowerCase()]) {
     if (src.includes("lactify")) return "Lactify";
-    if (src.includes("brainfy powder") || (src.includes("brainfy") && src.includes("powder"))) return "Brainfy Powder";
-    if (src.includes("brainfy drops") || (src.includes("brainfy") && src.includes("drop"))) return "Brainfy Drops";
-    if (src.includes("mamafy")) return "Mamafy";
+    if (src.includes("brainify powder") || (src.includes("brainify") && src.includes("powder"))) return "Brainify Powder";
+    if (src.includes("brainify drops") || (src.includes("brainify") && src.includes("drop"))) return "Brainify Drops";
+    if (src.includes("mamafy") || src.includes("mothers day") || src.includes("mother's day")) return "Mamafy";
     if (src.includes("flow joy") || src.includes("flowjoy") || src.includes("flow drop") || src.includes("flow drops")) return "Flow Joy Drops";
-    if ((src.includes("drops") || src.includes("drop")) && !src.includes("mamafy")) return "Brainfy Drops";
+    if ((src.includes("drops") || src.includes("drop")) && !src.includes("mamafy")) return "Brainify Drops";
+    if (src.includes("brainify")) return "Brainify Drops";
   }
   return "Other";
 }
