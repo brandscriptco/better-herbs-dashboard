@@ -16,75 +16,295 @@ const PRODUCT_COLORS = {
 
 // ─── DEMO DATA ──────────────────────────────────────────────────────────────
 const DEMO_ADS = [
-  { product: "Lactify", name: "Lactify_Dr. Nayana", spend: 29920.97, sales: 107868, purchases: 124, roas: 3.61, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - 2nd Doctor Compilation", spend: 12600.59, sales: 18336, purchases: 22, roas: 1.48, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Customer Review", spend: 11997.83, sales: 24681, purchases: 28, roas: 2.10, type: "UGC" },
-  { product: "Lactify", name: "Lactify - Dr. Rohit Bhardwaj", spend: 6449.40, sales: 4989, purchases: 7, roas: 0.80, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Mayur", spend: 5501.84, sales: 9517, purchases: 12, roas: 1.73, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Priyanka D", spend: 4600.99, sales: 5523, purchases: 7, roas: 3.10, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Garima", spend: 3586.59, sales: 3305, purchases: 5, roas: 0.92, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Static 27", spend: 3572.62, sales: 6071, purchases: 8, roas: 1.70, type: "Static" },
-  { product: "Lactify", name: "Lactify - Dr. Naaz", spend: 3550.11, sales: 8165, purchases: 10, roas: 2.30, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Srimukhi (Tamil)", spend: 2689.65, sales: 3605, purchases: 5, roas: 4.71, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Sandeep G", spend: 1645.26, sales: 2537, purchases: 3, roas: 1.54, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Priyanka (2nd)", spend: 1587.13, sales: 7689, purchases: 11, roas: 4.93, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Dr. Anuradha", spend: 960.49, sales: 1298, purchases: 2, roas: 1.35, type: "Doctor" },
-  { product: "Lactify", name: "Lactify - Mother Compilation", spend: 929.65, sales: 2446, purchases: 3, roas: 2.63, type: "UGC" },
-  { product: "Brainify Drops", name: "Drops - Maninder Kaur (Blessings) Video", spend: 76725.88, sales: 247220.45, purchases: 320, roas: 3.22, type: "UGC" },
-  { product: "Brainify Drops", name: "Drops - Dr. Vinod Video", spend: 71320.64, sales: 204505.20, purchases: 276, roas: 2.87, type: "Doctor" },
-  { product: "Brainify Drops", name: "Brainify Drops - Dr. Sajid", spend: 42538.74, sales: 125683, purchases: 169, roas: 2.95, type: "Doctor" },
-  { product: "Brainify Drops", name: "Drops - Static 7", spend: 31810.78, sales: 94990.60, purchases: 119, roas: 2.99, type: "Static" },
-  { product: "Brainify Drops", name: "Brainify Drops - Dr. Sajid (2nd)", spend: 31295.22, sales: 76436, purchases: 106, roas: 2.44, type: "Doctor" },
-  { product: "Brainify Drops", name: "Brainify Drops - Rajmani", spend: 16589.64, sales: 38827, purchases: 56, roas: 2.34, type: "UGC" },
-  { product: "Brainify Drops", name: "Drops - Dr. Maninder Kaur (Copycat Brand)", spend: 11199.54, sales: 27172.20, purchases: 32, roas: 2.43, type: "Doctor" },
-  { product: "Brainify Drops", name: "Mothers Day - Drops", spend: 10533.15, sales: 40082, purchases: 43, roas: 3.80, type: "Static" },
-  { product: "Brainify Drops", name: "Brainify Drops - Static 11", spend: 9856.68, sales: 20245, purchases: 24, roas: 2.05, type: "Static" },
-  { product: "Brainify Drops", name: "Brainify Drops - Static 12", spend: 9766.42, sales: 32583, purchases: 43, roas: 3.34, type: "Static" },
-  { product: "Brainify Drops", name: "Brainify Drops - Static 3", spend: 8924.17, sales: 22710, purchases: 26, roas: 2.54, type: "Static" },
-  { product: "Brainify Drops", name: "Brainify Drops - Rajmani Patel Edited", spend: 7933.11, sales: 17268, purchases: 19, roas: 2.18, type: "UGC" },
-  { product: "Brainify Drops", name: "Brainify Drops - Dr. Neha", spend: 5104.66, sales: 12911, purchases: 15, roas: 2.53, type: "Doctor" },
-  { product: "Brainify Drops", name: "Brainify Drops - Static 8", spend: 5534.29, sales: 12605, purchases: 15, roas: 2.28, type: "Static" },
-  { product: "Flow Joy Drops", name: "FlowJoy Drops - Static 2", spend: 27785.57, sales: 54363.40, purchases: 60, roas: 1.96, type: "Static" },
-  { product: "Flow Joy Drops", name: "Flow Drop - Dr. Ankit", spend: 22315.49, sales: 43853, purchases: 52, roas: 1.97, type: "Doctor" },
-  { product: "Flow Joy Drops", name: "Flow Drop - Dispatch Video", spend: 19097.73, sales: 34730, purchases: 46, roas: 1.82, type: "UGC" },
-  { product: "Flow Joy Drops", name: "Flow Drops - Dr. Sushma Mogri", spend: 9063.66, sales: 15289, purchases: 21, roas: 1.69, type: "Doctor" },
-  { product: "Flow Joy Drops", name: "FlowJoy Drops - Dr. Garima", spend: 5889.86, sales: 23955, purchases: 36, roas: 4.07, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Divya Bajpai", spend: 62595.97, sales: 211753.82, purchases: 244, roas: 3.38, type: "UGC" },
-  { product: "Brainify Powder", name: "Brainify Powder - Static 13 (Ingredients)", spend: 48015.05, sales: 139503.40, purchases: 167, roas: 2.91, type: "Static" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit Jha Video", spend: 36147.68, sales: 134105.96, purchases: 167, roas: 3.71, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Vinod 2", spend: 34148.19, sales: 121652, purchases: 160, roas: 3.56, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Vinod Post ID", spend: 21521.84, sales: 52808, purchases: 67, roas: 2.45, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Pushpendra 2nd", spend: 16791.22, sales: 37857, purchases: 50, roas: 2.25, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Prachi Mahajan", spend: 16488.92, sales: 46782, purchases: 49, roas: 2.84, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Doctor Compilation 2", spend: 12692.45, sales: 43337, purchases: 55, roas: 3.41, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Static 11", spend: 7369.96, sales: 13779, purchases: 20, roas: 1.87, type: "Static" },
-  { product: "Brainify Powder", name: "Brainify Powder - USP Static", spend: 7243.52, sales: 28133.20, purchases: 34, roas: 3.88, type: "Static" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit Jha (2nd)", spend: 6841.49, sales: 17435, purchases: 24, roas: 2.55, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Static 12", spend: 6838.35, sales: 28006, purchases: 34, roas: 4.10, type: "Static" },
-  { product: "Brainify Powder", name: "Brainify Powder - Maninder Kaur (Blessings)", spend: 4125.93, sales: 8876, purchases: 13, roas: 2.15, type: "UGC" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Riya", spend: 3519.23, sales: 7343, purchases: 7, roas: 2.09, type: "Doctor" },
-  { product: "Brainify Powder", name: "Brainify Powder - Dr. Suryakamal", spend: 3290.11, sales: 4374, purchases: 6, roas: 1.33, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Dr. Garima", spend: 28464.37, sales: 79689, purchases: 101, roas: 2.80, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Static 13", spend: 23968.92, sales: 59926, purchases: 75, roas: 2.50, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Dr. Shaifali", spend: 23065.44, sales: 68987, purchases: 88, roas: 2.99, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Static 4 (Do Not Buy)", spend: 20628.66, sales: 49872, purchases: 61, roas: 2.42, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Static 2", spend: 12758.97, sales: 33348, purchases: 42, roas: 2.61, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Dr. Smriti Edited", spend: 11809.94, sales: 21520, purchases: 28, roas: 1.82, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Static 6 USP", spend: 10232.50, sales: 29735, purchases: 33, roas: 2.91, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Dr. Samra Edit 2 (Direct)", spend: 9360.38, sales: 21614, purchases: 25, roas: 2.31, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Doctor Compilation Video", spend: 9199.31, sales: 27753, purchases: 37, roas: 3.02, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Doctor Compilation March", spend: 6473.92, sales: 15929, purchases: 20, roas: 2.46, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Dispatch Video March", spend: 5663.82, sales: 12123, purchases: 17, roas: 2.14, type: "UGC" },
-  { product: "Mamafy", name: "Mamafy - Dr. Samra Edit 4 (Nutrition)", spend: 5478.25, sales: 12313, purchases: 15, roas: 2.25, type: "Doctor" },
-  { product: "Mamafy", name: "Mothers Day - Mamafy", spend: 4392.87, sales: 14140, purchases: 15, roas: 3.22, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Static 14", spend: 4112.96, sales: 12953, purchases: 15, roas: 3.15, type: "Static" },
-  { product: "Mamafy", name: "Mamafy - Founder's Dispatch Video May", spend: 4103.58, sales: 16258, purchases: 21, roas: 3.96, type: "UGC" },
-  { product: "Mamafy", name: "Mamafy - Dr. Priya Soni", spend: 3697.88, sales: 3934, purchases: 6, roas: 1.06, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Dr. Soniya Gupta", spend: 3383.37, sales: 14412, purchases: 17, roas: 4.26, type: "Doctor" },
-  { product: "Mamafy", name: "Mamafy - Dispatch Video April", spend: 2729.07, sales: 3585, purchases: 5, roas: 1.31, type: "UGC" },
+  { product: "Brainify Drops", name: "Brainify drops -Maninder Kaur (Blessings) Video", spend: 67969.55, sales: 221287.18, purchases: 282, roas: 3.26, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Divya Bajpai", spend: 64246.65, sales: 231873.0, purchases: 266, roas: 3.61, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Vinod Video", spend: 52376.8, sales: 147822.2, purchases: 200, roas: 2.82, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Static - 13 (Ingredients)", spend: 49863.56, sales: 137496.4, purchases: 164, roas: 2.76, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr Vinod 2", spend: 34658.46, sales: 115426.0, purchases: 154, roas: 3.33, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr.sajid", spend: 32878.27, sales: 79342.0, purchases: 108, roas: 2.41, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit Jha  Video", spend: 32495.09, sales: 115801.0, purchases: 149, roas: 3.56, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify_Dr. Nayana", spend: 26811.34, sales: 99339.0, purchases: 113, roas: 3.71, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Sajid", spend: 24048.87, sales: 55767.0, purchases: 77, roas: 2.32, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy -  Static - 13", spend: 23724.17, sales: 55242.0, purchases: 69, roas: 2.33, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static 7", spend: 22743.13, sales: 68917.0, purchases: 87, roas: 3.03, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Doctor Compilation Video - 2  | 07/05/2026", spend: 21392.4, sales: 60229.0, purchases: 78, roas: 2.82, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy - Dr.Shaifali Ad code", spend: 20628.52, sales: 60443.0, purchases: 77, roas: 2.93, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy -  Static - 4 - Do not buy", spend: 18427.24, sales: 49252.0, purchases: 55, roas: 2.67, type: "Static", date: "" },
+  { product: "Flow Joy Drops", name: "Flowjoy Drop - Dispatch video", spend: 18162.81, sales: 34447.0, purchases: 47, roas: 1.9, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Dr Vinod - Post ID", spend: 18037.31, sales: 42490.0, purchases: 55, roas: 2.36, type: "Doctor", date: "" },
+  { product: "Flow Joy Drops", name: "Flowjoy Drops Static 2", spend: 17914.65, sales: 31689.4, purchases: 36, roas: 1.77, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mamafy - Dr. Garima", spend: 17630.1, sales: 51597.0, purchases: 64, roas: 2.93, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Customer Review - Lactation", spend: 16193.81, sales: 37134.0, purchases: 40, roas: 2.29, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Prachi Mahajan", spend: 15666.91, sales: 40520.0, purchases: 43, roas: 2.59, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Rajmani", spend: 15066.62, sales: 37219.0, purchases: 54, roas: 2.47, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Pushpendra 2nd video", spend: 14784.0, sales: 33402.0, purchases: 46, roas: 2.26, type: "Doctor", date: "" },
+  { product: "Flow Joy Drops", name: "Flow Drop - Dr. Ankit", spend: 14451.06, sales: 18739.0, purchases: 24, roas: 1.3, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "mamafy - Dr. Samra - Edit 2 (Direct) | 04/05/2026", spend: 12788.34, sales: 28639.0, purchases: 34, roas: 2.24, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Brainify Powder Static - 12   | 07/05/2026", spend: 12309.36, sales: 45744.0, purchases: 56, roas: 3.72, type: "Static", date: "" },
+  { product: "Flow Joy Drops", name: "flowjoy drops - Dr. Garima | 13/05/2026", spend: 12049.17, sales: 38292.0, purchases: 56, roas: 3.18, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - 2nd Doctor Compilation", spend: 10843.5, sales: 14092.0, purchases: 17, roas: 1.3, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Drops | 1/04/20206", spend: 10533.15, sales: 40082.0, purchases: 43, roas: 3.81, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Rajmani Patel - Edited | 07/05/2026", spend: 10080.6, sales: 19795.0, purchases: 22, roas: 1.96, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mothers Day -Powder | 1/04/20206", spend: 9705.77, sales: 28433.0, purchases: 31, roas: 2.93, type: "UGC", date: "" },
+  { product: "Mamafy", name: "mamafy - Static - 14| 13/05/2026", spend: 9613.21, sales: 26801.0, purchases: 30, roas: 2.79, type: "Static", date: "" },
+  { product: "Mamafy", name: "mamafy - Founder's  Dispatch Video May MOF | 13/05/2026", spend: 9552.32, sales: 27110.0, purchases: 35, roas: 2.84, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mamafy - Doctor Compilation Video", spend: 9274.86, sales: 27753.0, purchases: 37, roas: 2.99, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy -  Dr. Smriti - Edited", spend: 9199.56, sales: 20831.0, purchases: 27, roas: 2.26, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Dr. Ankit Jha | 04/05/2026", spend: 8025.41, sales: 20111.0, purchases: 28, roas: 2.51, type: "Doctor", date: "" },
+  { product: "Flow Joy Drops", name: "Flow drops - Dr. Sushma Mogri", spend: 7863.78, sales: 13991.0, purchases: 19, roas: 1.78, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Drops-Dr. Vinod Video", spend: 7805.03, sales: 13150.0, purchases: 17, roas: 1.68, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static - 3", spend: 7551.16, sales: 16959.0, purchases: 20, roas: 2.25, type: "Static", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Naaz | 13/05/2026", spend: 7492.65, sales: 17982.0, purchases: 23, roas: 2.4, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static - 8", spend: 7171.39, sales: 20869.0, purchases: 23, roas: 2.91, type: "Static", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Rohit Bharadwaj", spend: 6237.82, sales: 4989.0, purchases: 7, roas: 0.8, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static 11", spend: 5840.19, sales: 9986.0, purchases: 13, roas: 1.71, type: "Static", date: "" },
+  { product: "Mamafy", name: "mamafy - Dr. Samra - Edit 4 (Nutrition) | 04/05/2026", spend: 5478.25, sales: 11714.0, purchases: 14, roas: 2.14, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Static 19  | 04/05/2026", spend: 5067.23, sales: 11378.0, purchases: 12, roas: 2.25, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Rajmani Patel  | 04/05/2026", spend: 5063.75, sales: 5712.0, purchases: 7, roas: 1.13, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Static 20  | 04/05/2026", spend: 5062.61, sales: 8797.0, purchases: 12, roas: 1.74, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Static 18  | 04/05/2026", spend: 5031.59, sales: 12055.0, purchases: 14, roas: 2.4, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Mamafy | 1/04/20206", spend: 4392.87, sales: 12466.0, purchases: 14, roas: 2.84, type: "UGC", date: "" },
+  { product: "Mamafy", name: "mamafy - Dr. Priya Soni| 13/05/2026", spend: 4179.31, sales: 6061.0, purchases: 9, roas: 1.45, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Dr Vinod 2", spend: 4062.07, sales: 11545.0, purchases: 15, roas: 2.84, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Drops | Static 2", spend: 3714.32, sales: 9918.0, purchases: 12, roas: 2.67, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mothers Day -Powder | Static 2 |", spend: 3713.58, sales: 9991.0, purchases: 9, roas: 2.69, type: "Static", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Garima | 13/05/2026", spend: 3596.55, sales: 3305.0, purchases: 5, roas: 0.92, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Static - 27 | 13/05/2026", spend: 3594.98, sales: 6071.0, purchases: 8, roas: 1.69, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Mamafy - Retargeting | 1/04/20206", spend: 3587.21, sales: 19657.0, purchases: 20, roas: 5.48, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder Static - 22 | 19/05/2026", spend: 3458.88, sales: 10841.0, purchases: 12, roas: 3.13, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Maninder Kaur - March - Edited 19/05/2026", spend: 3456.78, sales: 6320.0, purchases: 9, roas: 1.83, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Rajeswari (Telugu) 19/05/2026", spend: 3450.49, sales: 10025.0, purchases: 14, roas: 2.91, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static - 17  19/05/2026", spend: 3436.48, sales: 9073.0, purchases: 11, roas: 2.64, type: "Static", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Priyanka (Ped.)", spend: 3402.97, sales: 8444.0, purchases: 12, roas: 2.48, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static 12", spend: 3273.36, sales: 12712.0, purchases: 16, roas: 3.88, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder Dr. Shiba (Odia)i) | 19/05/2026", spend: 3145.09, sales: 1907.0, purchases: 3, roas: 0.61, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Dr. Taran (Punjabi) | 19/05/2026", spend: 3137.31, sales: 1638.0, purchases: 2, roas: 0.52, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Mothers Day - Lactify | 1/04/20206", spend: 3135.28, sales: 7452.0, purchases: 8, roas: 2.38, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Dr. Mallika (Telugu)   | 07/05/2026", spend: 2975.07, sales: 5662.0, purchases: 8, roas: 1.9, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "mamafy - Founder's  Dispatch Video May MOF", spend: 2968.58, sales: 9470.0, purchases: 11, roas: 3.19, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Prachi Mahajan | 07/05/2026", spend: 2804.62, sales: 1997.0, purchases: 3, roas: 0.71, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Padma 07/05/2026", spend: 2645.07, sales: 1098.0, purchases: 2, roas: 0.42, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Smriti   | 07/05/2026", spend: 2614.28, sales: 2946.0, purchases: 3, roas: 1.13, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy - Static 2", spend: 2569.87, sales: 7566.0, purchases: 10, roas: 2.94, type: "Static", date: "" },
+  { product: "Mamafy", name: "mamafy - Dr. Soniya Gupta 1st Edit | 04/05/2026", spend: 2510.47, sales: 649.0, purchases: 1, roas: 0.26, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops -Brainify Drops Static - 16 | 07/05/2026", spend: 2253.78, sales: 3156.0, purchases: 4, roas: 1.4, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Brainify Powder Static - 17   | 07/05/2026", spend: 2253.59, sales: 4204.0, purchases: 5, roas: 1.87, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Brainify Powder Static - 16   | 07/05/2026", spend: 2229.56, sales: 2396.0, purchases: 3, roas: 1.07, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Brainify Powder Static - 14   | 07/05/2026", spend: 2212.35, sales: 2586.0, purchases: 4, roas: 1.17, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mamafy - Mamafy Static - 6 - USP | 23/03/2026", spend: 2193.49, sales: 5004.0, purchases: 6, roas: 2.28, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Divyani Bhagat   | 07/05/2026", spend: 2161.87, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder -Dr. Sonal | 04/05/2026", spend: 2111.65, sales: 4543.0, purchases: 4, roas: 2.15, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Pushpendra  | 07/05/2026", spend: 2101.8, sales: 1489.0, purchases: 1, roas: 0.71, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Sunil (Kannad)  | 21/05/2026", spend: 2050.93, sales: 1450.0, purchases: 2, roas: 0.71, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder April Dispatch Video  | 21/05/2026", spend: 2047.16, sales: 4343.0, purchases: 7, roas: 2.12, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Padma Tamil 21/05/2026", spend: 2036.85, sales: 2376.0, purchases: 4, roas: 1.17, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Manisha  | 21/05/2026", spend: 2012.61, sales: 5298.0, purchases: 5, roas: 2.63, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify - USP Static", spend: 2001.53, sales: 7490.0, purchases: 8, roas: 3.74, type: "Static", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Gunjan - 2nd Video | 21/05/2026", spend: 1999.73, sales: 3464.0, purchases: 4, roas: 1.73, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Priyanka Deswal", spend: 1921.48, sales: 1958.0, purchases: 2, roas: 1.02, type: "Doctor", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Brainify Powder Static - 15   | 07/05/2026", spend: 1835.38, sales: 649.0, purchases: 1, roas: 0.35, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Google Static", spend: 1782.66, sales: 5163.0, purchases: 7, roas: 2.9, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Ankit", spend: 1759.25, sales: 3355.0, purchases: 5, roas: 1.91, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Neha", spend: 1599.95, sales: 3096.0, purchases: 4, roas: 1.94, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Rina Arthaba", spend: 1597.39, sales: 3855.0, purchases: 5, roas: 2.41, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mothers Day -Powder - RETARGETING | 1/04/20206", spend: 1504.58, sales: 1998.0, purchases: 2, roas: 1.33, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Mamafy | Static 2", spend: 1393.15, sales: 5115.0, purchases: 5, roas: 3.67, type: "Static", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Riya", spend: 1340.95, sales: 4495.0, purchases: 5, roas: 3.35, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy_Dr. Tanya Video", spend: 1307.86, sales: 3802.0, purchases: 4, roas: 2.91, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy -  Static - 16", spend: 1302.76, sales: 709.0, purchases: 1, roas: 0.54, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mamafy -  Dispatch video - April", spend: 1283.93, sales: 2876.0, purchases: 4, roas: 2.24, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Divya Bajpai", spend: 1255.71, sales: 2098.0, purchases: 2, roas: 1.67, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mothers Day - Drops -  Retargeting | 1/04/20206", spend: 1156.79, sales: 949.0, purchases: 1, roas: 0.82, type: "UGC", date: "" },
+  { product: "Brainify Powder", name: "Brainify Powder - Dr. Suryakamal", spend: 1063.4, sales: 549.0, purchases: 1, roas: 0.52, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Lactify - Dr. Srimukhi (Telugu)", spend: 1047.0, sales: 649.0, purchases: 1, roas: 0.62, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Dr. Pillai (Tamil) (Partnership ad) - Tamil", spend: 1030.61, sales: 599.0, purchases: 1, roas: 0.58, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Mothers Day - Lactify | Static 2", spend: 946.52, sales: 2597.0, purchases: 3, roas: 2.74, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static - 7", spend: 885.39, sales: 1309.0, purchases: 1, roas: 1.48, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Static - 13 (Ingredients)", spend: 844.66, sales: 619.0, purchases: 1, roas: 0.73, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static - 5", spend: 834.67, sales: 599.0, purchases: 1, roas: 0.72, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify Drops -Maninder Kaur (Blessings) Video", spend: 762.2, sales: 2787.0, purchases: 3, roas: 3.66, type: "UGC", date: "" },
+  { product: "Other", name: "Dr. Tanya - Ad code | 23/05/2026", spend: 681.79, sales: 1835.0, purchases: 3, roas: 2.69, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "mamafy - Mamafy Static - 17 | 23/05/2026", spend: 665.84, sales: 1400.0, purchases: 2, roas: 2.1, type: "Static", date: "" },
+  { product: "Mamafy", name: "mamafy - Doctor Compilation video 1 - Mamafy- April | 23/05/2026", spend: 664.76, sales: 1450.0, purchases: 2, roas: 2.18, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "mamafy - Pooja Shah | 23/05/2026", spend: 657.23, sales: 1450.0, purchases: 2, roas: 2.21, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Dr. Ankit Jha  Video", spend: 607.92, sales: 2158.0, purchases: 2, roas: 3.55, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Maninder Kaur", spend: 553.92, sales: 619.0, purchases: 1, roas: 1.12, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Drops- Static 3", spend: 541.16, sales: 549.0, purchases: 1, roas: 1.01, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops - Dr. Rajeswari (Telugu) 19/05/2026", spend: 522.43, sales: 609.0, purchases: 1, roas: 1.17, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy - Dr. Soniya Gupta", spend: 515.64, sales: 2033.0, purchases: 3, roas: 3.94, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "Mamafy - static 2", spend: 502.05, sales: 649.0, purchases: 1, roas: 1.29, type: "Static", date: "" },
+  { product: "Mamafy", name: "Mamafy - Doctor Compilation Video - March - 1", spend: 458.42, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Lactify", name: "Mothers Day - Lactify - Retargeting | 1/04/20206", spend: 425.43, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mamafy - Static - 6 - USP", spend: 402.78, sales: 1259.0, purchases: 1, roas: 3.13, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops-Maninder Kaur (Blessings) Video", spend: 346.46, sales: 619.0, purchases: 1, roas: 1.79, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Drops - Dr.sajid", spend: 327.75, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Other", name: "Aanchal Naherwa - Ad code | 23/05/2026", spend: 322.11, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Blessing Video", spend: 246.81, sales: 2896.0, purchases: 4, roas: 11.73, type: "UGC", date: "" },
+  { product: "Mamafy", name: "Mamafy - Drishti 3rd Video", spend: 183.04, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify - INA_Hindi - Post ID", spend: 148.93, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Drops - Static 12", spend: 114.0, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops- Static 7", spend: 92.32, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Mamafy", name: "mamafy - Dr. Samra - Edit 2 (Direct)", spend: 89.07, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Drops-Dr Maninder Kaur (Copycat Brand)", spend: 70.28, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Drops - Doctor compilation video 2 | 19/04/2026", spend: 66.49, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Drops - Static 8", spend: 65.44, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops-Static 11 Us Vs Them", spend: 65.21, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops - Static 16", spend: 60.39, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops - Static 7", spend: 57.17, sales: 0.0, purchases: 0, roas: 0, type: "Static", date: "" },
+  { product: "Brainify Drops", name: "Drops - Rajmani", spend: 43.07, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Drops - Dr. Padmavathi - kannada - 23/03/2026", spend: 37.7, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Brainify Drops", name: "Brainify - Prachi Mahajan", spend: 9.63, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Brainify drops -Neha", spend: 9.37, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" },
+  { product: "Brainify Drops", name: "Drops-Dr Sonal", spend: 6.16, sales: 0.0, purchases: 0, roas: 0, type: "Doctor", date: "" },
+  { product: "Mamafy", name: "mamafy - Founders dispatch", spend: 3.92, sales: 0.0, purchases: 0, roas: 0, type: "UGC", date: "" }
 ];
 
-const DEMO_GOOGLE = { spend: 47604.54, sales: 505685.75, purchases: 471, roas: 8.82 };
+const DEMO_GOOGLE = null;
+
+const DEMO_DAILY_BLENDED = [
+  { date: "2026-05-23", spend: 43830.66, sales: 94526.0, purchases: 123, roas: 2.16, cpa: 356.35 },
+  { date: "2026-05-22", spend: 39249.93, sales: 103475.0, purchases: 125, roas: 2.64, cpa: 314.0 },
+  { date: "2026-05-21", spend: 38065.49, sales: 102297.0, purchases: 127, roas: 2.69, cpa: 299.73 },
+  { date: "2026-05-20", spend: 36471.78, sales: 106799.0, purchases: 126, roas: 2.93, cpa: 289.46 },
+  { date: "2026-05-19", spend: 38548.98, sales: 99435.0, purchases: 124, roas: 2.58, cpa: 310.88 },
+  { date: "2026-05-18", spend: 35721.35, sales: 91701.0, purchases: 118, roas: 2.57, cpa: 302.72 },
+  { date: "2026-05-17", spend: 36874.72, sales: 84342.4, purchases: 106, roas: 2.29, cpa: 347.87 },
+  { date: "2026-05-16", spend: 33252.27, sales: 98164.0, purchases: 123, roas: 2.95, cpa: 270.34 },
+  { date: "2026-05-15", spend: 42432.98, sales: 103787.0, purchases: 128, roas: 2.45, cpa: 331.51 },
+  { date: "2026-05-14", spend: 44390.93, sales: 128652.0, purchases: 173, roas: 2.9, cpa: 256.59 },
+  { date: "2026-05-13", spend: 47867.89, sales: 117977.0, purchases: 154, roas: 2.46, cpa: 310.83 },
+  { date: "2026-05-12", spend: 43030.63, sales: 121527.0, purchases: 158, roas: 2.82, cpa: 272.35 },
+  { date: "2026-05-11", spend: 46935.94, sales: 120852.0, purchases: 149, roas: 2.57, cpa: 315.01 },
+  { date: "2026-05-10", spend: 53418.04, sales: 105984.0, purchases: 129, roas: 1.98, cpa: 414.09 },
+  { date: "2026-05-09", spend: 47565.09, sales: 128505.0, purchases: 163, roas: 2.7, cpa: 291.81 },
+  { date: "2026-05-08", spend: 50798.55, sales: 134546.0, purchases: 163, roas: 2.65, cpa: 311.65 },
+  { date: "2026-05-07", spend: 48453.26, sales: 149250.0, purchases: 184, roas: 3.08, cpa: 263.33 },
+  { date: "2026-05-06", spend: 45393.77, sales: 126607.4, purchases: 160, roas: 2.79, cpa: 283.71 },
+  { date: "2026-05-05", spend: 45702.66, sales: 139363.0, purchases: 172, roas: 3.05, cpa: 265.71 },
+  { date: "2026-05-04", spend: 48429.97, sales: 101234.18, purchases: 122, roas: 2.09, cpa: 396.97 },
+  { date: "2026-05-03", spend: 42434.81, sales: 125170.2, purchases: 147, roas: 2.95, cpa: 288.67 },
+  { date: "2026-05-02", spend: 36756.61, sales: 103453.0, purchases: 134, roas: 2.81, cpa: 274.3 },
+  { date: "2026-05-01", spend: 41699.08, sales: 115057.0, purchases: 135, roas: 2.76, cpa: 308.88 }
+];
+
+const DEMO_DAILY_BY_PRODUCT = [
+  { date: "2026-05-23", product: "Brainify Drops", spend: 10124.28, sales: 24331.0, purchases: 32, roas: 2.4, cpa: 316.38 },
+  { date: "2026-05-23", product: "Brainify Powder", spend: 17078.09, sales: 42383.0, purchases: 53, roas: 2.48, cpa: 322.23 },
+  { date: "2026-05-23", product: "Flow Joy Drops", spend: 1930.66, sales: 4177.0, purchases: 7, roas: 2.16, cpa: 275.81 },
+  { date: "2026-05-23", product: "Lactify", spend: 5314.95, sales: 5728.0, purchases: 8, roas: 1.08, cpa: 664.37 },
+  { date: "2026-05-23", product: "Mamafy", spend: 8378.78, sales: 16072.0, purchases: 20, roas: 1.92, cpa: 418.94 },
+  { date: "2026-05-23", product: "Other", spend: 1003.9, sales: 1835.0, purchases: 3, roas: 1.83, cpa: 334.63 },
+  { date: "2026-05-22", product: "Brainify Drops", spend: 9383.37, sales: 19968.0, purchases: 27, roas: 2.13, cpa: 347.53 },
+  { date: "2026-05-22", product: "Brainify Powder", spend: 16325.34, sales: 51916.0, purchases: 64, roas: 3.18, cpa: 255.08 },
+  { date: "2026-05-22", product: "Flow Joy Drops", spend: 1961.44, sales: 1759.0, purchases: 3, roas: 0.9, cpa: 653.81 },
+  { date: "2026-05-22", product: "Lactify", spend: 6021.9, sales: 14942.0, purchases: 15, roas: 2.48, cpa: 401.46 },
+  { date: "2026-05-22", product: "Mamafy", spend: 5557.88, sales: 14890.0, purchases: 16, roas: 2.68, cpa: 347.37 },
+  { date: "2026-05-21", product: "Brainify Drops", spend: 10402.19, sales: 26071.0, purchases: 35, roas: 2.51, cpa: 297.21 },
+  { date: "2026-05-21", product: "Brainify Powder", spend: 15382.09, sales: 43217.0, purchases: 53, roas: 2.81, cpa: 290.23 },
+  { date: "2026-05-21", product: "Flow Joy Drops", spend: 1875.24, sales: 5762.0, purchases: 9, roas: 3.07, cpa: 208.36 },
+  { date: "2026-05-21", product: "Lactify", spend: 5881.37, sales: 13267.0, purchases: 14, roas: 2.26, cpa: 420.1 },
+  { date: "2026-05-21", product: "Mamafy", spend: 4524.6, sales: 13980.0, purchases: 16, roas: 3.09, cpa: 282.79 },
+  { date: "2026-05-20", product: "Brainify Drops", spend: 10876.67, sales: 35197.0, purchases: 43, roas: 3.24, cpa: 252.95 },
+  { date: "2026-05-20", product: "Brainify Powder", spend: 15118.71, sales: 41206.0, purchases: 48, roas: 2.73, cpa: 314.97 },
+  { date: "2026-05-20", product: "Flow Joy Drops", spend: 2124.61, sales: 4985.0, purchases: 5, roas: 2.35, cpa: 424.92 },
+  { date: "2026-05-20", product: "Lactify", spend: 3437.06, sales: 9314.0, purchases: 11, roas: 2.71, cpa: 312.46 },
+  { date: "2026-05-20", product: "Mamafy", spend: 4914.73, sales: 16097.0, purchases: 19, roas: 3.28, cpa: 258.67 },
+  { date: "2026-05-19", product: "Brainify Drops", spend: 11474.37, sales: 25133.0, purchases: 32, roas: 2.19, cpa: 358.57 },
+  { date: "2026-05-19", product: "Brainify Powder", spend: 15993.13, sales: 37146.0, purchases: 48, roas: 2.32, cpa: 333.19 },
+  { date: "2026-05-19", product: "Flow Joy Drops", spend: 2165.93, sales: 5750.0, purchases: 7, roas: 2.65, cpa: 309.42 },
+  { date: "2026-05-19", product: "Lactify", spend: 3506.62, sales: 13921.0, purchases: 17, roas: 3.97, cpa: 206.27 },
+  { date: "2026-05-19", product: "Mamafy", spend: 5408.93, sales: 17485.0, purchases: 20, roas: 3.23, cpa: 270.45 },
+  { date: "2026-05-18", product: "Brainify Drops", spend: 11417.5, sales: 32823.0, purchases: 43, roas: 2.87, cpa: 265.52 },
+  { date: "2026-05-18", product: "Brainify Powder", spend: 10620.06, sales: 33529.0, purchases: 41, roas: 3.16, cpa: 259.03 },
+  { date: "2026-05-18", product: "Flow Joy Drops", spend: 3652.84, sales: 8031.0, purchases: 12, roas: 2.2, cpa: 304.4 },
+  { date: "2026-05-18", product: "Lactify", spend: 4025.49, sales: 5703.0, purchases: 7, roas: 1.42, cpa: 575.07 },
+  { date: "2026-05-18", product: "Mamafy", spend: 6005.46, sales: 11615.0, purchases: 15, roas: 1.93, cpa: 400.36 },
+  { date: "2026-05-17", product: "Brainify Drops", spend: 11344.38, sales: 25076.0, purchases: 28, roas: 2.21, cpa: 405.16 },
+  { date: "2026-05-17", product: "Brainify Powder", spend: 11229.49, sales: 23687.0, purchases: 33, roas: 2.11, cpa: 340.29 },
+  { date: "2026-05-17", product: "Flow Joy Drops", spend: 3450.72, sales: 9234.4, purchases: 12, roas: 2.68, cpa: 287.56 },
+  { date: "2026-05-17", product: "Lactify", spend: 3974.52, sales: 13837.0, purchases: 16, roas: 3.48, cpa: 248.41 },
+  { date: "2026-05-17", product: "Mamafy", spend: 6875.61, sales: 12508.0, purchases: 17, roas: 1.82, cpa: 404.45 },
+  { date: "2026-05-16", product: "Brainify Drops", spend: 11193.23, sales: 25553.0, purchases: 34, roas: 2.28, cpa: 329.21 },
+  { date: "2026-05-16", product: "Brainify Powder", spend: 9551.08, sales: 31910.0, purchases: 40, roas: 3.34, cpa: 238.78 },
+  { date: "2026-05-16", product: "Flow Joy Drops", spend: 2195.72, sales: 5836.0, purchases: 6, roas: 2.66, cpa: 365.95 },
+  { date: "2026-05-16", product: "Lactify", spend: 3649.15, sales: 13344.0, purchases: 16, roas: 3.66, cpa: 228.07 },
+  { date: "2026-05-16", product: "Mamafy", spend: 6663.09, sales: 21521.0, purchases: 27, roas: 3.23, cpa: 246.78 },
+  { date: "2026-05-15", product: "Brainify Drops", spend: 14933.93, sales: 25908.0, purchases: 32, roas: 1.73, cpa: 466.69 },
+  { date: "2026-05-15", product: "Brainify Powder", spend: 11134.2, sales: 40870.0, purchases: 52, roas: 3.67, cpa: 214.12 },
+  { date: "2026-05-15", product: "Flow Joy Drops", spend: 3893.22, sales: 6028.0, purchases: 6, roas: 1.55, cpa: 648.87 },
+  { date: "2026-05-15", product: "Lactify", spend: 4368.42, sales: 11545.0, purchases: 14, roas: 2.64, cpa: 312.03 },
+  { date: "2026-05-15", product: "Mamafy", spend: 8103.21, sales: 19436.0, purchases: 24, roas: 2.4, cpa: 337.63 },
+  { date: "2026-05-14", product: "Brainify Drops", spend: 14259.64, sales: 36273.0, purchases: 51, roas: 2.54, cpa: 279.6 },
+  { date: "2026-05-14", product: "Brainify Powder", spend: 13205.97, sales: 46453.0, purchases: 62, roas: 3.52, cpa: 213.0 },
+  { date: "2026-05-14", product: "Flow Joy Drops", spend: 4147.24, sales: 8454.0, purchases: 12, roas: 2.04, cpa: 345.6 },
+  { date: "2026-05-14", product: "Lactify", spend: 4632.45, sales: 5363.0, purchases: 7, roas: 1.16, cpa: 661.78 },
+  { date: "2026-05-14", product: "Mamafy", spend: 8145.63, sales: 32109.0, purchases: 41, roas: 3.94, cpa: 198.67 },
+  { date: "2026-05-13", product: "Brainify Drops", spend: 15190.83, sales: 40352.0, purchases: 52, roas: 2.66, cpa: 292.13 },
+  { date: "2026-05-13", product: "Brainify Powder", spend: 12783.27, sales: 38431.0, purchases: 49, roas: 3.01, cpa: 260.88 },
+  { date: "2026-05-13", product: "Flow Joy Drops", spend: 3972.43, sales: 12291.0, purchases: 19, roas: 3.09, cpa: 209.08 },
+  { date: "2026-05-13", product: "Lactify", spend: 5327.93, sales: 6651.0, purchases: 9, roas: 1.25, cpa: 591.99 },
+  { date: "2026-05-13", product: "Mamafy", spend: 10593.43, sales: 20252.0, purchases: 25, roas: 1.91, cpa: 423.74 },
+  { date: "2026-05-12", product: "Brainify Drops", spend: 15548.41, sales: 40390.0, purchases: 56, roas: 2.6, cpa: 277.65 },
+  { date: "2026-05-12", product: "Brainify Powder", spend: 10987.5, sales: 32400.0, purchases: 44, roas: 2.95, cpa: 249.72 },
+  { date: "2026-05-12", product: "Flow Joy Drops", spend: 2469.0, sales: 3331.0, purchases: 5, roas: 1.35, cpa: 493.8 },
+  { date: "2026-05-12", product: "Lactify", spend: 3217.75, sales: 10307.0, purchases: 12, roas: 3.2, cpa: 268.15 },
+  { date: "2026-05-12", product: "Mamafy", spend: 10807.97, sales: 35099.0, purchases: 41, roas: 3.25, cpa: 263.61 },
+  { date: "2026-05-11", product: "Brainify Drops", spend: 15832.76, sales: 38875.0, purchases: 52, roas: 2.46, cpa: 304.48 },
+  { date: "2026-05-11", product: "Brainify Powder", spend: 13528.02, sales: 42641.0, purchases: 49, roas: 3.15, cpa: 276.08 },
+  { date: "2026-05-11", product: "Flow Joy Drops", spend: 3613.56, sales: 4063.0, purchases: 7, roas: 1.12, cpa: 516.22 },
+  { date: "2026-05-11", product: "Lactify", spend: 3120.88, sales: 3854.0, purchases: 5, roas: 1.23, cpa: 624.18 },
+  { date: "2026-05-11", product: "Mamafy", spend: 10840.72, sales: 31419.0, purchases: 36, roas: 2.9, cpa: 301.13 },
+  { date: "2026-05-10", product: "Brainify Drops", spend: 16656.82, sales: 34582.0, purchases: 47, roas: 2.08, cpa: 354.4 },
+  { date: "2026-05-10", product: "Brainify Powder", spend: 19206.94, sales: 39616.0, purchases: 47, roas: 2.06, cpa: 408.66 },
+  { date: "2026-05-10", product: "Flow Joy Drops", spend: 3542.58, sales: 4546.0, purchases: 6, roas: 1.28, cpa: 590.43 },
+  { date: "2026-05-10", product: "Lactify", spend: 3404.12, sales: 7898.0, purchases: 8, roas: 2.32, cpa: 425.51 },
+  { date: "2026-05-10", product: "Mamafy", spend: 10607.58, sales: 19342.0, purchases: 21, roas: 1.82, cpa: 505.12 },
+  { date: "2026-05-09", product: "Brainify Drops", spend: 14100.16, sales: 34277.0, purchases: 47, roas: 2.43, cpa: 300.0 },
+  { date: "2026-05-09", product: "Brainify Powder", spend: 18963.9, sales: 44540.0, purchases: 55, roas: 2.35, cpa: 344.8 },
+  { date: "2026-05-09", product: "Flow Joy Drops", spend: 2957.8, sales: 10768.0, purchases: 14, roas: 3.64, cpa: 211.27 },
+  { date: "2026-05-09", product: "Lactify", spend: 2795.92, sales: 7461.0, purchases: 8, roas: 2.67, cpa: 349.49 },
+  { date: "2026-05-09", product: "Mamafy", spend: 8747.31, sales: 31459.0, purchases: 39, roas: 3.6, cpa: 224.29 },
+  { date: "2026-05-08", product: "Brainify Drops", spend: 15281.2, sales: 50870.0, purchases: 63, roas: 3.33, cpa: 242.56 },
+  { date: "2026-05-08", product: "Brainify Powder", spend: 18863.02, sales: 39326.0, purchases: 48, roas: 2.08, cpa: 392.98 },
+  { date: "2026-05-08", product: "Flow Joy Drops", spend: 3247.53, sales: 4630.0, purchases: 5, roas: 1.43, cpa: 649.51 },
+  { date: "2026-05-08", product: "Lactify", spend: 3253.03, sales: 11087.0, purchases: 12, roas: 3.41, cpa: 271.09 },
+  { date: "2026-05-08", product: "Mamafy", spend: 10153.77, sales: 28633.0, purchases: 35, roas: 2.82, cpa: 290.11 },
+  { date: "2026-05-07", product: "Brainify Drops", spend: 16060.33, sales: 53222.0, purchases: 71, roas: 3.31, cpa: 226.2 },
+  { date: "2026-05-07", product: "Brainify Powder", spend: 14456.23, sales: 35713.0, purchases: 44, roas: 2.47, cpa: 328.55 },
+  { date: "2026-05-07", product: "Flow Joy Drops", spend: 3460.07, sales: 7879.0, purchases: 9, roas: 2.28, cpa: 384.45 },
+  { date: "2026-05-07", product: "Lactify", spend: 3199.01, sales: 10080.0, purchases: 10, roas: 3.15, cpa: 319.9 },
+  { date: "2026-05-07", product: "Mamafy", spend: 11277.62, sales: 42356.0, purchases: 50, roas: 3.76, cpa: 225.55 },
+  { date: "2026-05-06", product: "Brainify Drops", spend: 14785.16, sales: 43767.0, purchases: 61, roas: 2.96, cpa: 242.38 },
+  { date: "2026-05-06", product: "Brainify Powder", spend: 13758.07, sales: 43699.4, purchases: 52, roas: 3.18, cpa: 264.58 },
+  { date: "2026-05-06", product: "Flow Joy Drops", spend: 3301.72, sales: 3541.0, purchases: 5, roas: 1.07, cpa: 660.34 },
+  { date: "2026-05-06", product: "Lactify", spend: 3106.65, sales: 10793.0, purchases: 13, roas: 3.47, cpa: 238.97 },
+  { date: "2026-05-06", product: "Mamafy", spend: 10442.17, sales: 24807.0, purchases: 29, roas: 2.38, cpa: 360.07 },
+  { date: "2026-05-05", product: "Brainify Drops", spend: 14674.04, sales: 43178.0, purchases: 57, roas: 2.94, cpa: 257.44 },
+  { date: "2026-05-05", product: "Brainify Powder", spend: 13959.86, sales: 50180.0, purchases: 55, roas: 3.59, cpa: 253.82 },
+  { date: "2026-05-05", product: "Flow Joy Drops", spend: 3248.78, sales: 5030.0, purchases: 6, roas: 1.55, cpa: 541.46 },
+  { date: "2026-05-05", product: "Lactify", spend: 3320.09, sales: 6142.0, purchases: 8, roas: 1.85, cpa: 415.01 },
+  { date: "2026-05-05", product: "Mamafy", spend: 10499.89, sales: 34833.0, purchases: 46, roas: 3.32, cpa: 228.26 },
+  { date: "2026-05-04", product: "Brainify Drops", spend: 14866.2, sales: 31614.18, purchases: 41, roas: 2.13, cpa: 362.59 },
+  { date: "2026-05-04", product: "Brainify Powder", spend: 13877.6, sales: 33057.0, purchases: 40, roas: 2.38, cpa: 346.94 },
+  { date: "2026-05-04", product: "Flow Joy Drops", spend: 3362.18, sales: 625.0, purchases: 1, roas: 0.19, cpa: 3362.18 },
+  { date: "2026-05-04", product: "Lactify", spend: 3744.26, sales: 12643.0, purchases: 16, roas: 3.38, cpa: 234.02 },
+  { date: "2026-05-04", product: "Mamafy", spend: 12579.73, sales: 23295.0, purchases: 24, roas: 1.85, cpa: 524.16 },
+  { date: "2026-05-03", product: "Brainify Drops", spend: 14750.04, sales: 48950.2, purchases: 60, roas: 3.32, cpa: 245.83 },
+  { date: "2026-05-03", product: "Brainify Powder", spend: 10327.43, sales: 35178.0, purchases: 40, roas: 3.41, cpa: 258.19 },
+  { date: "2026-05-03", product: "Flow Joy Drops", spend: 3379.42, sales: 5353.0, purchases: 7, roas: 1.58, cpa: 482.77 },
+  { date: "2026-05-03", product: "Lactify", spend: 4287.98, sales: 9248.0, purchases: 11, roas: 2.16, cpa: 389.82 },
+  { date: "2026-05-03", product: "Mamafy", spend: 9689.94, sales: 26441.0, purchases: 29, roas: 2.73, cpa: 334.14 },
+  { date: "2026-05-02", product: "Brainify Drops", spend: 13499.33, sales: 41622.0, purchases: 55, roas: 3.08, cpa: 245.44 },
+  { date: "2026-05-02", product: "Brainify Powder", spend: 7858.41, sales: 23058.0, purchases: 31, roas: 2.93, cpa: 253.5 },
+  { date: "2026-05-02", product: "Flow Joy Drops", spend: 2966.5, sales: 8183.0, purchases: 11, roas: 2.76, cpa: 269.68 },
+  { date: "2026-05-02", product: "Lactify", spend: 3671.87, sales: 5852.0, purchases: 7, roas: 1.59, cpa: 524.55 },
+  { date: "2026-05-02", product: "Mamafy", spend: 8760.5, sales: 24738.0, purchases: 30, roas: 2.82, cpa: 292.02 },
+  { date: "2026-05-01", product: "Brainify Drops", spend: 16116.34, sales: 46941.0, purchases: 57, roas: 2.91, cpa: 282.74 },
+  { date: "2026-05-01", product: "Brainify Powder", spend: 8710.82, sales: 41988.0, purchases: 48, roas: 4.82, cpa: 181.48 },
+  { date: "2026-05-01", product: "Flow Joy Drops", spend: 3522.28, sales: 6902.0, purchases: 8, roas: 1.96, cpa: 440.29 },
+  { date: "2026-05-01", product: "Lactify", spend: 4451.18, sales: 5244.0, purchases: 6, roas: 1.18, cpa: 741.86 },
+  { date: "2026-05-01", product: "Mamafy", spend: 8898.46, sales: 13982.0, purchases: 16, roas: 1.57, cpa: 556.15 }
+];
 
 // ─── PARSING HELPERS ────────────────────────────────────────────────────────
 function extractProduct(adName, campaignName) {
@@ -354,7 +574,7 @@ function UploadZone({ onData, onDemo }) {
             cursor: "pointer", fontFamily: "inherit",
           }}
         >
-          Load Demo Data (May 1–19, 2026)
+          Load Demo Data (May 1–23, 2026)
         </button>
       </div>
     </div>
@@ -363,9 +583,9 @@ function UploadZone({ onData, onDemo }) {
 
 
 // ─── UI: LOOKER STUDIO VIEW ──────────────────────────────────────────────────
-function LookerStudioView({ metaAds }) {
-  const blended = useMemo(() => computeDailyBlended(metaAds), [metaAds]);
-  const byProduct = useMemo(() => computeDailyByProduct(metaAds), [metaAds]);
+function LookerStudioView({ metaAds, preBlended, preByProduct }) {
+  const blended = useMemo(() => preBlended || computeDailyBlended(metaAds), [metaAds, preBlended]);
+  const byProduct = useMemo(() => preByProduct || computeDailyByProduct(metaAds), [metaAds, preByProduct]);
   const hasDate = blended.length > 0 && blended[0].date !== "Unknown";
 
   const thStyle = {
@@ -472,6 +692,8 @@ export default function Dashboard() {
   const [sortDir, setSortDir] = useState("desc");
   const [adTypeFilter, setAdTypeFilter] = useState("All");
   const [activeView, setActiveView] = useState("dashboard");
+  const [demoBlended, setDemoBlended] = useState(null);
+  const [demoByProduct, setDemoByProduct] = useState(null);
 
   const hasData = metaAds !== null;
 
@@ -483,6 +705,8 @@ export default function Dashboard() {
     setSelectedProduct("All Products");
     setSearchQuery("");
     setAdTypeFilter("All");
+    setDemoBlended(DEMO_DAILY_BLENDED);
+    setDemoByProduct(DEMO_DAILY_BY_PRODUCT);
   }, []);
 
   const handleFileData = useCallback(({ metaAds: ads, googleData: gd, fileName: fn }) => {
@@ -500,6 +724,8 @@ export default function Dashboard() {
     setGoogleData(null);
     setIsDemo(false);
     setFileName("");
+    setDemoBlended(null);
+    setDemoByProduct(null);
   }, []);
 
   const productTotals = useMemo(() => metaAds ? computeProductTotals(metaAds) : {}, [metaAds]);
@@ -555,7 +781,7 @@ export default function Dashboard() {
           </div>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 4, marginLeft: 18 }}>
             {isDemo
-              ? "Demo data · May 1–19, 2026 · Meta + Google Ads"
+              ? "Demo data · May 1–23, 2026 · Meta + Google Ads"
               : hasData
               ? `Live data · ${fileName} · Meta${googleData ? " + Google" : " only"}`
               : "Upload your Excel file below to populate the dashboard"}
@@ -601,7 +827,7 @@ export default function Dashboard() {
 
       {/* ── LOOKER STUDIO VIEW ── */}
       {hasData && activeView === "looker" && (
-        <LookerStudioView metaAds={metaAds} />
+        <LookerStudioView metaAds={metaAds} preBlended={isDemo ? demoBlended : null} preByProduct={isDemo ? demoByProduct : null} />
       )}
 
       {/* ── DASHBOARD ── */}
