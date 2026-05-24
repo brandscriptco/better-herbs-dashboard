@@ -139,7 +139,7 @@ function parseMetaRows(headers, rows) {
     if (!name || spend <= 0) continue;
     const product = extractProduct(name, campaign);
     const type = extractAdType(name);
-    const reas = spend > 0 && sales > 0 ? sales / spend : 0;
+    const roas = spend > 0 && sales > 0 ? sales / spend : 0;
     const date = dateIdx >= 0 ? String(row[dateIdx] || "").trim() : "";
     ads.push({ name, spend, sales, purchases, roas, product, type, date });
   }
