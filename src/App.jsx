@@ -200,7 +200,7 @@ function computeProductTotals(ads) {
 function computeDailyBlended(ads) {
   const byDate = {};
   for (const ad of ads) {
-    const d = ad.date || "Unknown";
+    const d = ad.date || "—";
     if (!byDate[d]) byDate[d] = { date: d, spend: 0, sales: 0, purchases: 0 };
     byDate[d].spend += ad.spend;
     byDate[d].sales += ad.sales;
@@ -218,7 +218,7 @@ function computeDailyBlended(ads) {
 function computeDailyByProduct(ads) {
   const map = {};
   for (const ad of ads) {
-    const d = ad.date || "Unknown";
+    const d = ad.date || "—";
     const key = `${d}||${ad.product}`;
     if (!map[key]) map[key] = { date: d, product: ad.product, spend: 0, sales: 0, purchases: 0 };
     map[key].spend += ad.spend;
@@ -379,16 +379,6 @@ function LookerStudioView({ metaAds }) {
     textAlign: align,
   });
 
-  if (!hasDate) {
-    return (
-      <div style={{ textAlign: "center", padding: "60px 24px", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>
-        ⚠️ No date column found in your data.
-        <div style={{ marginTop: 8, fontSize: 12 }}>
-          Make sure your Meta Ads export includes a <strong style={{ color: "rgba(255,255,255,0.5)" }}>Reporting Starts</strong> or <strong style={{ color: "rgba(255,255,255,0.5)" }}>Day</strong> column.
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
