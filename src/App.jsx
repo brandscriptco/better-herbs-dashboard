@@ -327,6 +327,48 @@ function extractAdType(adName) {
   return "UGC";
 }
 
+
+function extractCreator(adName) {
+  const n = (adName || '').trim();
+  if (/static/i.test(n) && !/dr\.?\s/i.test(n)) return 'Static Creative';
+  if (/dispatch/i.test(n) && !/dr\.?\s/i.test(n)) return 'Dispatch Video';
+  if (/compilation/i.test(n) && !/dr\.?\s/i.test(n)) return 'Compilation';
+  if (/founder/i.test(n)) return "Founder's Video";
+  const drMatch = n.match(/Dr\.?\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
+  if (drMatch) return drMatch[0].replace(/\s+/g, ' ').trim();
+  const parts = n.split(/\s*[-–]\s*/);
+  for (let i = 1; i < parts.length; i++) {
+    const p = parts[i].replace(/\s*\|.*$/, '').replace(/\s*\(.*$/, '').replace(/\d.*$/, '').trim();
+    if (p && p.length > 2 && p.length < 35 && !/^(static|video|drops|powder|ad|code|usp|google|ingredient)/i.test(p)) return p;
+  }
+  return 'Other';
+}
+
+function computeCreatorTotals(ads) {
+  const totals = {};
+  for (const ad of ads) {
+    const creator = extractCreator(ad.name);
+    if (!totals[creator]) totals[creator] = { creator, spend: 0, sales: 0, purchases: 0, count: 0 };
+    totals[creator].spend += ad.spend;
+    totals[creator].sales += ad.sales;
+    totals[creator].purchases += ad.purchases;
+    totals[creator].count += 1;
+  }
+  return Object.values(totals)
+    .map(d => ({ ...d, roas: d.spend > 0 && d.sales > 0 ? d.sales / d.spend : 0, cpa: d.purchases > 0 ? d.spend / d.purchases : 0 }))
+    .sort((a, b) => b.spend - a.spend);
+}
+
+function exportCSV(data, filename) {
+  const headers = ['Ad Name','Product','Creator','Type','Date','Spend (INR)','Revenue (INR)','Purchases','ROAS'];
+  const rows = data.map(ad => [ad.name, ad.product, extractCreator(ad.name), ad.type, ad.date || '', ad.spend.toFixed(2), ad.sales.toFixed(2), ad.purchases, ad.roas.toFixed(2)]);
+  const csv = [headers, ...rows].map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename || 'ads-export.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
 function findColIdx(headers, candidates) {
   for (const c of candidates) {
     const idx = headers.findIndex((h) => h.toLowerCase().includes(c.toLowerCase()));
@@ -584,6 +626,8 @@ function UploadZone({ onData, onDemo }) {
 
 // ─── UI: LOOKER STUDIO VIEW ──────────────────────────────────────────────────
 function LookerStudioView({ metaAds, preBlended, preByProduct }) {
+  const [productFilter, setProductFilter] = useState("All Products");
+  const availableProducts = useMemo(() => ["All Products", ...Array.from(new Set((preByProduct || []).map(r => r.product))).filter(Boolean).sort()], [preByProduct]);
   const blended = useMemo(() => preBlended || computeDailyBlended(metaAds), [metaAds, preBlended]);
   const byProduct = useMemo(() => preByProduct || computeDailyByProduct(metaAds), [metaAds, preByProduct]);
   const hasDate = blended.length > 0 && blended[0].date !== "Unknown";
@@ -640,9 +684,14 @@ function LookerStudioView({ metaAds, preBlended, preByProduct }) {
 
       {/* ── Bifurcated Day-wise ── */}
       <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 16 }}>
-          Day-wise by Product
-          <span style={{ fontSize: 12, fontWeight: 400, color: "rgba(255,255,255,0.35)", marginLeft: 8 }}>Bifurcated</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Day-wise by Product</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {availableProducts.map(p => (
+              <button key={p} onClick={() => setProductFilter(p)} style={{ padding: "4px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: `1px solid ${productFilter === p ? (PRODUCT_COLORS[p] || "#c8a2f8") : "rgba(255,255,255,0.08)"}`, background: productFilter === p ? `${PRODUCT_COLORS[p] || "#c8a2f8"}18` : "transparent", color: productFilter === p ? (PRODUCT_COLORS[p] || "#c8a2f8") : "rgba(255,255,255,0.4)", fontFamily: "inherit" }}>{p}</button>
+            ))}
+          </div>
+          <button onClick={() => exportCSV((preByProduct || []).filter(r => productFilter === "All Products" || r.product === productFilter).map(r => ({...r, name: r.product + " (" + r.date + ")", type: "", roas: r.roas, sales: r.sales, spend: r.spend, purchases: r.purchases})), "daily-product-export.csv")} style={{ marginLeft: "auto", padding: "5px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export</button>
         </div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 2px" }}>
@@ -658,7 +707,7 @@ function LookerStudioView({ metaAds, preBlended, preByProduct }) {
               </tr>
             </thead>
             <tbody>
-              {byProduct.map((row, i) => (
+              {(byProduct.filter(r => productFilter === "All Products" || r.product === productFilter)).map((row, i) => (
                 <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
                   <td style={{ ...td("left"), color: "rgba(255,255,255,0.6)" }}>{row.date}</td>
                   <td style={{ padding: "10px 12px" }}>
@@ -694,6 +743,9 @@ export default function Dashboard() {
   const [activeView, setActiveView] = useState("dashboard");
   const [demoBlended, setDemoBlended] = useState(null);
   const [demoByProduct, setDemoByProduct] = useState(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [creatorFilter, setCreatorFilter] = useState("All");
 
   const hasData = metaAds !== null;
 
@@ -739,10 +791,17 @@ export default function Dashboard() {
     let ads = selectedProduct !== "All Products" ? metaAds.filter((a) => a.product === selectedProduct) : metaAds;
     if (searchQuery) { const q = searchQuery.toLowerCase(); ads = ads.filter((a) => a.name.toLowerCase().includes(q) || a.product.toLowerCase().includes(q)); }
     if (adTypeFilter !== "All") ads = ads.filter((a) => a.type === adTypeFilter);
+    if (creatorFilter !== "All") ads = ads.filter((a) => extractCreator(a.name) === creatorFilter);
+    if (dateFrom) ads = ads.filter((a) => a.date && a.date >= dateFrom);
+    if (dateTo) ads = ads.filter((a) => a.date && a.date <= dateTo);
     return [...ads].sort((a, b) => sortDir === "desc" ? b[sortField] - a[sortField] : a[sortField] - b[sortField]);
-  }, [metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter]);
+  }, [metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter, creatorFilter, dateFrom, dateTo]);
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
+  const uniqueCreators = useMemo(() => { if (!metaAds) return []; const s = new Set(metaAds.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [metaAds]);
+  const creatorTotals = useMemo(() => metaAds ? computeCreatorTotals(selectedProduct !== "All Products" ? metaAds.filter(a => a.product === selectedProduct) : (dateFrom || dateTo ? filteredAds : metaAds)) : [], [metaAds, selectedProduct, filteredAds, dateFrom, dateTo]);
+  const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
+  const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
   const handleSort = (field) => {
     if (sortField === field) setSortDir(sortDir === "desc" ? "asc" : "desc");
@@ -805,7 +864,7 @@ export default function Dashboard() {
         </div>
         {hasData && (
           <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: 4, border: "1px solid rgba(255,255,255,0.06)" }}>
-            {[{ id: "dashboard", label: "📊 Dashboard" }, { id: "looker", label: "📅 Looker Studio" }].map(({ id, label }) => (
+            {[{ id: "dashboard", label: "📊 Dashboard" }, { id: "creators", label: "👤 Creators" }, { id: "looker", label: "📅 Looker Studio" }].map(({ id, label }) => (
               <button
                 key={id}
                 onClick={() => setActiveView(id)}
@@ -826,7 +885,75 @@ export default function Dashboard() {
       {!hasData && <UploadZone onData={handleFileData} onDemo={loadDemo} />}
 
       {/* ── LOOKER STUDIO VIEW ── */}
-      {hasData && activeView === "looker" && (
+      {hasData && activeView === "creators" && (
+          <div>
+            <div style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Creator Performance</div>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{creatorTotals.length} creators · {selectedProduct !== "All Products" ? selectedProduct : "All Products"}</span>
+              <button onClick={() => exportCSV(filteredAds, "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 3px" }}>
+                  <thead>
+                    <tr>
+                      {[["Creator","left"],["Ads","center"],["Spend","right"],["Revenue","right"],["ROAS","right"],["Orders","right"],["CPA","right"]].map(([h,a]) => (
+                        <th key={h} style={{ padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(255,255,255,0.35)", textAlign: a, borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creatorTotals.map((c, i) => (
+                      <tr key={c.creator} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent", cursor: "pointer" }} onClick={() => setCreatorFilter(c.creator === creatorFilter ? "All" : c.creator)}>
+                        <td style={{ padding: "11px 12px", fontSize: 13, fontWeight: 600, color: creatorFilter === c.creator ? "#c8a2f8" : "#fff" }}>
+                          {creatorFilter === c.creator && <span style={{ marginRight: 6 }}>▶</span>}{c.creator}
+                        </td>
+                        <td style={{ padding: "11px 12px", textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{c.count}</td>
+                        <td style={{ padding: "11px 12px", textAlign: "right", fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)" }}>{fmtFull(c.spend)}</td>
+                        <td style={{ padding: "11px 12px", textAlign: "right", fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)" }}>{fmtFull(c.sales)}</td>
+                        <td style={{ padding: "11px 12px", textAlign: "right" }}><RoasBadge value={c.roas} /></td>
+                        <td style={{ padding: "11px 12px", textAlign: "right", fontSize: 13, fontWeight: 600, color: "#fff" }}>{c.purchases}</td>
+                        <td style={{ padding: "11px 12px", textAlign: "right", fontSize: 13, fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)" }}>{c.cpa > 0 ? fmtFull(c.cpa) : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {creatorFilter !== "All" && (
+              <div style={{ marginTop: 24 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                  Ads by <span style={{ color: "#c8a2f8" }}>{creatorFilter}</span>
+                  <button onClick={() => setCreatorFilter("All")} style={{ marginLeft: 12, fontSize: 11, padding: "3px 10px", borderRadius: 5, border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontFamily: "inherit" }}>✕ Clear</button>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 2px" }}>
+                      <thead><tr>
+                        {[["Ad Name","left"],["Product","left"],["Spend","right"],["Revenue","right"],["ROAS","right"],["Orders","right"]].map(([h,a]) => (
+                          <th key={h} style={{ padding: "10px 12px", fontSize: 11, fontWeight: 600, textTransform: "uppercase", color: "rgba(255,255,255,0.35)", textAlign: a, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{h}</th>
+                        ))}
+                      </tr></thead>
+                      <tbody>
+                        {filteredAds.filter(a => extractCreator(a.name) === creatorFilter).sort((a,b) => b.spend - a.spend).map((ad, i) => (
+                          <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
+                            <td style={{ padding: "10px 12px", fontSize: 12, color: "#fff", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ad.name}</td>
+                            <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 11, fontWeight: 600, color: PRODUCT_COLORS[ad.product] || "#888", background: (PRODUCT_COLORS[ad.product] || "#888") + "15", padding: "2px 7px", borderRadius: 4 }}>{ad.product}</span></td>
+                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)" }}>{fmt(ad.spend)}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12, fontFamily: "'JetBrains Mono', monospace", color: "rgba(255,255,255,0.7)" }}>{fmt(ad.sales)}</td>
+                            <td style={{ padding: "10px 12px", textAlign: "right" }}><RoasBadge value={ad.roas} /></td>
+                            <td style={{ padding: "10px 12px", textAlign: "right", fontSize: 12, fontWeight: 600, color: "#fff" }}>{ad.purchases}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+        {hasData && activeView === "looker" && (
         <LookerStudioView metaAds={metaAds} preBlended={isDemo ? demoBlended : null} preByProduct={isDemo ? demoByProduct : null} />
       )}
 
@@ -898,6 +1025,30 @@ export default function Dashboard() {
 
           {/* Ad Table */}
           <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
+            <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase" }}>From</label>
+                <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase" }}>To</label>
+                <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase" }}>Creator</label>
+                <select value={creatorFilter} onChange={e => setCreatorFilter(e.target.value)} style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", background: "#1a1a2e", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer", maxWidth: 180 }}>
+                  {uniqueCreators.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              {activeFiltersCount > 0 && (
+                <button onClick={clearAllFilters} style={{ alignSelf: "flex-end", padding: "7px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.08)", color: "#f87171", fontFamily: "inherit" }}>
+                  ✕ Clear {activeFiltersCount} filter{activeFiltersCount > 1 ? "s" : ""}
+                </button>
+              )}
+              <button onClick={() => exportCSV(filteredAds, (isDemo ? "demo" : "live") + "-ads-export.csv")} style={{ alignSelf: "flex-end", padding: "7px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>
+                ↓ Export CSV ({filteredAds.length})
+              </button>
+            </div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>
                 Ad-Level Performance
