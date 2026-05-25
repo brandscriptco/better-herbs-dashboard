@@ -746,6 +746,7 @@ export default function Dashboard() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("All");
+  const [creatorProductFilter, setCreatorProductFilter] = useState("All Products");
 
   const hasData = metaAds !== null;
 
@@ -799,7 +800,7 @@ export default function Dashboard() {
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
   const uniqueCreators = useMemo(() => { if (!metaAds) return []; const s = new Set(metaAds.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [metaAds]);
-  const creatorTotals = useMemo(() => metaAds ? computeCreatorTotals(selectedProduct !== "All Products" ? metaAds.filter(a => a.product === selectedProduct) : (dateFrom || dateTo ? filteredAds : metaAds)) : [], [metaAds, selectedProduct, filteredAds, dateFrom, dateTo]);
+  const creatorTotals = useMemo(() => metaAds ? computeCreatorTotals(creatorProductFilter !== "All Products" ? metaAds.filter(a => a.product === creatorProductFilter) : (dateFrom || dateTo ? filteredAds : metaAds)) : [], [metaAds, creatorProductFilter, filteredAds, dateFrom, dateTo]);
   const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
   const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
@@ -887,10 +888,17 @@ export default function Dashboard() {
       {/* ── LOOKER STUDIO VIEW ── */}
       {hasData && activeView === "creators" && (
           <div>
-            <div style={{ display: "flex", gap: 12, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Creator Performance</div>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{creatorTotals.length} creators · {selectedProduct !== "All Products" ? selectedProduct : "All Products"}</span>
-              <button onClick={() => exportCSV(filteredAds, "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Creator Performance</div>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{creatorTotals.length} creators</span>
+                <button onClick={() => exportCSV(creatorTotals.flatMap(c => (creatorProductFilter !== "All Products" ? (metaAds || []).filter(a => a.product === creatorProductFilter) : (metaAds || [])).filter(a => extractCreator(a.name) === c.creator)), "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {["All Products", ...Array.from(new Set((metaAds || []).map(a => a.product))).filter(Boolean).sort()].map(p => (
+                  <button key={p} onClick={() => { setCreatorProductFilter(p); setCreatorFilter("All"); }} style={{ padding: "4px 12px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", border: `1px solid ${creatorProductFilter === p ? (PRODUCT_COLORS[p] || "#c8a2f8") : "rgba(255,255,255,0.08)"}`, background: creatorProductFilter === p ? `${PRODUCT_COLORS[p] || "#c8a2f8"}18` : "transparent", color: creatorProductFilter === p ? (PRODUCT_COLORS[p] || "#c8a2f8") : "rgba(255,255,255,0.4)", fontFamily: "inherit" }}>{p}</button>
+                ))}
+              </div>
             </div>
             <div style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 20 }}>
               <div style={{ overflowX: "auto" }}>
@@ -935,7 +943,7 @@ export default function Dashboard() {
                         ))}
                       </tr></thead>
                       <tbody>
-                        {filteredAds.filter(a => extractCreator(a.name) === creatorFilter).sort((a,b) => b.spend - a.spend).map((ad, i) => (
+                        {(creatorProductFilter !== "All Products" ? (metaAds || []).filter(a => a.product === creatorProductFilter) : filteredAds).filter(a => extractCreator(a.name) === creatorFilter).sort((a,b) => b.spend - a.spend).map((ad, i) => (
                           <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
                             <td style={{ padding: "10px 12px", fontSize: 12, color: "#fff", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ad.name}</td>
                             <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 11, fontWeight: 600, color: PRODUCT_COLORS[ad.product] || "#888", background: (PRODUCT_COLORS[ad.product] || "#888") + "15", padding: "2px 7px", borderRadius: 4 }}>{ad.product}</span></td>
