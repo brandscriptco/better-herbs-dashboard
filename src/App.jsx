@@ -538,19 +538,47 @@ export default function Dashboard() {
 
   const productData = productTotals[selectedProduct] || { spend: 0, sales: 0, purchases: 0, roas: 0 };
 
+  // In demo mode, DEMO_ADS are period-totals (all dated 2026-05-27).
+  // When a date filter is active, we scale each ad proportionally using demoByProduct daily data.
+  const scaledDemoAds = useMemo(() => {
+    if (!metaAds) return null;
+    // Live mode: use dateFilteredAds directly
+    if (!isDemo || !demoByProduct) return dateFilteredAds || metaAds;
+    // Demo mode, no date filter: return as-is
+    if (!dateFrom && !dateTo) return metaAds;
+    // Demo mode + date filter: compute per-product scale factor
+    const productScale = {};
+    const products = [...new Set(demoByProduct.map(r => r.product))];
+    for (const product of products) {
+      const all = demoByProduct.filter(r => r.product === product);
+      const inRange = all.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
+      const totalSpend = all.reduce((s, r) => s + r.spend, 0);
+      const rangeSpend = inRange.reduce((s, r) => s + r.spend, 0);
+      productScale[product] = totalSpend > 0 ? rangeSpend / totalSpend : 0;
+    }
+    // Fallback scale for any unmapped product
+    const allTotal = demoByProduct.reduce((s, r) => s + r.spend, 0);
+    const allRange = demoByProduct.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).reduce((s, r) => s + r.spend, 0);
+    const overallScale = allTotal > 0 ? allRange / allTotal : 0;
+    return metaAds.map(ad => {
+      const scale = productScale[ad.product] ?? overallScale;
+      return { ...ad, spend: ad.spend * scale, sales: ad.sales * scale, purchases: Math.round(ad.purchases * scale), roas: ad.spend > 0 ? (ad.sales * scale) / (ad.spend * scale) : 0 };
+    });
+  }, [isDemo, metaAds, demoByProduct, dateFrom, dateTo, dateFilteredAds]);
+
   const filteredAds = useMemo(() => {
-    const base = dateFilteredAds || metaAds;
+    const base = scaledDemoAds || metaAds;
     if (!base) return [];
     let ads = selectedProduct !== "All Products" ? base.filter((a) => a.product === selectedProduct) : base;
     if (searchQuery) { const q = searchQuery.toLowerCase(); ads = ads.filter((a) => a.name.toLowerCase().includes(q) || a.product.toLowerCase().includes(q)); }
     if (adTypeFilter !== "All") ads = ads.filter((a) => a.type === adTypeFilter);
     if (creatorFilter !== "All") ads = ads.filter((a) => extractCreator(a.name) === creatorFilter);
     return [...ads].sort((a, b) => sortDir === "desc" ? b[sortField] - a[sortField] : a[sortField] - b[sortField]);
-  }, [dateFilteredAds, metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter, creatorFilter]);
+  }, [scaledDemoAds, metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter, creatorFilter]);
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
-  const uniqueCreators = useMemo(() => { const base = dateFilteredAds || metaAds; if (!base) return []; const s = new Set(base.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [dateFilteredAds, metaAds]);
-  const creatorTotals = useMemo(() => { const base = dateFilteredAds || metaAds; if (!base) return []; const pool = creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base; return computeCreatorTotals(pool); }, [dateFilteredAds, metaAds, creatorProductFilter]);
+  const uniqueCreators = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const s = new Set(base.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [scaledDemoAds, metaAds]);
+  const creatorTotals = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const pool = creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base; return computeCreatorTotals(pool); }, [scaledDemoAds, metaAds, creatorProductFilter]);
   const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
   const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
@@ -752,7 +780,7 @@ export default function Dashboard() {
               <div style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Creator Performance</div>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{creatorTotals.length} creators</span>
-                <button onClick={() => exportCSV(creatorTotals.flatMap(c => (creatorProductFilter !== "All Products" ? (metaAds || []).filter(a => a.product === creatorProductFilter) : (metaAds || [])).filter(a => extractCreator(a.name) === c.creator)), "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
+                <button onClick={() => exportCSV(creatorTotals.flatMap(c => (creatorProductFilter !== "All Products" ? (scaledDemoAds || metaAds || []).filter(a => a.product === creatorProductFilter) : (scaledDemoAds || metaAds || [])).filter(a => extractCreator(a.name) === c.creator)), "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {["All Products", ...Array.from(new Set((metaAds || []).map(a => a.product))).filter(Boolean).sort()].map(p => (
@@ -803,7 +831,7 @@ export default function Dashboard() {
                         ))}
                       </tr></thead>
                       <tbody>
-                        {(creatorProductFilter !== "All Products" ? (metaAds || []).filter(a => a.product === creatorProductFilter) : filteredAds).filter(a => extractCreator(a.name) === creatorFilter).sort((a,b) => b.spend - a.spend).map((ad, i) => (
+                        {(creatorProductFilter !== "All Products" ? (scaledDemoAds || metaAds || []).filter(a => a.product === creatorProductFilter) : (scaledDemoAds || metaAds || [])).filter(a => extractCreator(a.name) === creatorFilter).sort((a,b) => b.spend - a.spend).map((ad, i) => (
                           <tr key={i} style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.015)" : "transparent" }}>
                             <td style={{ padding: "10px 12px", fontSize: 12, color: "#fff", maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ad.name}</td>
                             <td style={{ padding: "10px 12px" }}><span style={{ fontSize: 11, fontWeight: 600, color: PRODUCT_COLORS[ad.product] || "#888", background: (PRODUCT_COLORS[ad.product] || "#888") + "15", padding: "2px 7px", borderRadius: 4 }}>{ad.product}</span></td>
