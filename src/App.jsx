@@ -780,6 +780,11 @@ export default function Dashboard() {
               <div style={{ display: "flex", gap: 12, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Creator Performance</div>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{creatorTotals.length} creators</span>
+                {(dateFrom || dateTo) && (
+                  <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, background: "rgba(92,164,247,0.12)", color: "#5ca4f7", border: "1px solid rgba(92,164,247,0.25)" }}>
+                    📅 {dateFrom && dateTo ? dateFrom + " → " + dateTo : dateFrom ? "From " + dateFrom : "Until " + dateTo}
+                  </span>
+                )}
                 <button onClick={() => exportCSV(creatorTotals.flatMap(c => (creatorProductFilter !== "All Products" ? (scaledDemoAds || metaAds || []).filter(a => a.product === creatorProductFilter) : (scaledDemoAds || metaAds || [])).filter(a => extractCreator(a.name) === c.creator)), "creator-export.csv")} style={{ marginLeft: "auto", padding: "6px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.08)", color: "#5ca4f7", fontFamily: "inherit" }}>↓ Export CSV</button>
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
