@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────
@@ -461,6 +461,9 @@ export default function Dashboard() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [creatorFilter, setCreatorFilter] = useState("All");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }; });
+  const calendarRef = useRef(null);
   const [creatorProductFilter, setCreatorProductFilter] = useState("All Products");
 
   const hasData = metaAds !== null;
@@ -627,26 +630,116 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-        {hasData && (
-          <div style={{ display: "flex", gap: 10, padding: "10px 0 4px", alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>From</label>
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer" }} />
+{hasData && (() => {
+          // Close calendar on outside click
+          const handleOutsideClick = (e) => {
+            if (calendarRef.current && !calendarRef.current.contains(e.target)) setShowCalendar(false);
+          };
+          // Quick preset helper
+          const applyPreset = (days) => {
+            if (days === 0) { setDateFrom(""); setDateTo(""); setShowCalendar(false); return; }
+            const to = new Date(); to.setHours(0,0,0,0);
+            const from = new Date(to); from.setDate(from.getDate() - (days - 1));
+            const fmt = d => d.toISOString().slice(0,10);
+            setDateFrom(fmt(from)); setDateTo(fmt(to)); setShowCalendar(false);
+          };
+          const presets = [
+            { label: "All", days: 0 }, { label: "Last 7D", days: 7 },
+            { label: "Last 14D", days: 14 }, { label: "Last 30D", days: 30 }, { label: "This Month", days: -1 }
+          ];
+          // Calendar helpers
+          const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+          const { year, month } = calendarMonth;
+          const firstDay = new Date(year, month, 1).getDay();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const calCells = [];
+          for (let i = 0; i < firstDay; i++) calCells.push(null);
+          for (let d = 1; d <= daysInMonth; d++) calCells.push(d);
+          const fmt2 = (y,m,d) => `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+          const applyThisMonth = () => {
+            const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
+            setDateFrom(fmt2(y,m,1)); setDateTo(fmt2(y,m,new Date(y,m+1,0).getDate())); setShowCalendar(false);
+          };
+          const handleDayClick = (d) => {
+            const clicked = fmt2(year, month, d);
+            if (!dateFrom || (dateFrom && dateTo)) { setDateFrom(clicked); setDateTo(""); }
+            else if (clicked < dateFrom) { setDateTo(dateFrom); setDateFrom(clicked); }
+            else { setDateTo(clicked); setShowCalendar(false); }
+          };
+          const isInRange = (d) => {
+            const dt = fmt2(year, month, d);
+            if (dateFrom && dateTo) return dt >= dateFrom && dt <= dateTo;
+            if (dateFrom && !dateTo) return dt === dateFrom;
+            return false;
+          };
+          const isStart = (d) => fmt2(year, month, d) === dateFrom;
+          const isEnd = (d) => fmt2(year, month, d) === dateTo;
+          const displayRange = dateFrom && dateTo ? `${dateFrom} → ${dateTo}` : dateFrom ? `From ${dateFrom}` : "All dates";
+          return (
+            <div ref={calendarRef} style={{ position: "relative", display: "inline-block", padding: "6px 0 4px" }}>
+              {/* Trigger button */}
+              <button
+                onClick={() => { if (!showCalendar) { document.addEventListener('mousedown', handleOutsideClick, { once: true }); } setShowCalendar(v => !v); }}
+                style={{ display:"flex", alignItems:"center", gap:8, padding:"7px 14px", borderRadius:9, border:"1px solid rgba(92,164,247,0.25)", background: (dateFrom||dateTo) ? "rgba(92,164,247,0.12)" : "rgba(255,255,255,0.04)", color:"#e8e6f0", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit", whiteSpace:"nowrap" }}
+              >
+                <span style={{ fontSize:14 }}>📅</span>
+                <span style={{ color: (dateFrom||dateTo) ? "#5ca4f7" : "rgba(255,255,255,0.5)" }}>{displayRange}</span>
+                <span style={{ fontSize:10, color:"rgba(255,255,255,0.3)", marginLeft:2 }}>{showCalendar ? "▲" : "▼"}</span>
+              </button>
+              {(dateFrom || dateTo) && (
+                <button onClick={() => { setDateFrom(""); setDateTo(""); }} style={{ marginLeft:6, padding:"6px 10px", borderRadius:7, fontSize:11, fontWeight:600, cursor:"pointer", border:"1px solid rgba(248,113,113,0.3)", background:"rgba(248,113,113,0.08)", color:"#f87171", fontFamily:"inherit" }}>✕</button>
+              )}
+              {/* Dropdown panel */}
+              {showCalendar && (
+                <div style={{ position:"absolute", top:"calc(100% + 6px)", left:0, zIndex:999, background:"#1a1a2e", border:"1px solid rgba(255,255,255,0.12)", borderRadius:14, padding:16, boxShadow:"0 8px 32px rgba(0,0,0,0.5)", minWidth:300 }}>
+                  {/* Preset buttons */}
+                  <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap" }}>
+                    {presets.map(p => (
+                      <button key={p.label} onClick={() => p.days === -1 ? applyThisMonth() : applyPreset(p.days)}
+                        style={{ padding:"4px 10px", borderRadius:6, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                          border: "1px solid rgba(92,164,247,0.3)", background: "rgba(92,164,247,0.1)", color:"#5ca4f7" }}>
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Calendar header */}
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+                    <button onClick={() => setCalendarMonth(m => { let mo = m.month-1, yr = m.year; if(mo<0){mo=11;yr--;} return {year:yr,month:mo}; })}
+                      style={{ background:"none", border:"none", color:"#e8e6f0", cursor:"pointer", fontSize:16, padding:"0 6px" }}>‹</button>
+                    <span style={{ fontWeight:700, fontSize:13, color:"#e8e6f0" }}>{monthNames[month]} {year}</span>
+                    <button onClick={() => setCalendarMonth(m => { let mo = m.month+1, yr = m.year; if(mo>11){mo=0;yr++;} return {year:yr,month:mo}; })}
+                      style={{ background:"none", border:"none", color:"#e8e6f0", cursor:"pointer", fontSize:16, padding:"0 6px" }}>›</button>
+                  </div>
+                  {/* Day headers */}
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2, marginBottom:4 }}>
+                    {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (
+                      <div key={d} style={{ textAlign:"center", fontSize:10, color:"rgba(255,255,255,0.3)", fontWeight:700, padding:"2px 0" }}>{d}</div>
+                    ))}
+                  </div>
+                  {/* Day cells */}
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
+                    {calCells.map((d, i) => d === null ? (
+                      <div key={i} />
+                    ) : (
+                      <button key={i} onClick={() => handleDayClick(d)}
+                        style={{ padding:"6px 0", textAlign:"center", fontSize:12, fontWeight: isStart(d)||isEnd(d) ? 700 : 400,
+                          borderRadius: isStart(d)||isEnd(d) ? 6 : isInRange(d) ? 0 : 6,
+                          background: isStart(d)||isEnd(d) ? "#5ca4f7" : isInRange(d) ? "rgba(92,164,247,0.18)" : "transparent",
+                          color: isStart(d)||isEnd(d) ? "#fff" : isInRange(d) ? "#5ca4f7" : "#e8e6f0",
+                          border: "none", cursor:"pointer", fontFamily:"inherit" }}>
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Hint text */}
+                  <div style={{ marginTop:10, fontSize:10, color:"rgba(255,255,255,0.25)", textAlign:"center" }}>
+                    {!dateFrom ? "Click to set start date" : !dateTo ? "Click to set end date" : `${dateFrom} → ${dateTo}`}
+                  </div>
+                </div>
+              )}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <label style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>To</label>
-              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ padding: "5px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer" }} />
-            </div>
-            {(dateFrom || dateTo) && (
-              <button onClick={() => { setDateFrom(""); setDateTo(""); }} style={{ alignSelf: "flex-end", padding: "6px 12px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.08)", color: "#f87171", fontFamily: "inherit" }}>✕ Clear dates</button>
-            )}
-            {(dateFrom || dateTo) && (
-              <span style={{ alignSelf: "flex-end", fontSize: 11, color: "rgba(255,255,255,0.35)", paddingBottom: 6 }}>
-                {dateFrom && dateTo ? dateFrom + " → " + dateTo : dateFrom ? "From " + dateFrom : "Until " + dateTo}
-              </span>
-            )}
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* ── UPLOAD ZONE (no data state) ── */}
