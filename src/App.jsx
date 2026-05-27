@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef } from "react";
 import * as XLSX from "xlsx";
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────
-const PRODUCTS = ["All Products", "Lactify", "Brainify Powder", "Brainify Drops", "Mamafy", "Flow Joy Drops"];
+const PRODUCTS = ["All Products", "Lactify", "Brainify Powder", "Brainify Drops", "Mamafy", "Flow Joy Drops","Flowjoy"];
 
 const PRODUCT_COLORS = {
   "All Products": "#c8a2f8",
