@@ -43,19 +43,7 @@ function extractAdType(adName) {
 
 
 function extractCreator(adName) {
-  const n = (adName || '').trim();
-  if (/static/i.test(n) && !/dr\.?\s/i.test(n)) return 'Static Creative';
-  if (/dispatch/i.test(n) && !/dr\.?\s/i.test(n)) return 'Dispatch Video';
-  if (/compilation/i.test(n) && !/dr\.?\s/i.test(n)) return 'Compilation';
-  if (/founder/i.test(n)) return "Founder's Video";
-  const drMatch = n.match(/Dr\.?\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
-  if (drMatch) return drMatch[0].replace(/\s+/g, ' ').trim();
-  const parts = n.split(/\s*[-–]\s*/);
-  for (let i = 1; i < parts.length; i++) {
-    const p = parts[i].replace(/\s*\|.*$/, '').replace(/\s*\(.*$/, '').replace(/\d.*$/, '').trim();
-    if (p && p.length > 2 && p.length < 35 && !/^(static|video|drops|powder|ad|code|usp|google|ingredient)/i.test(p)) return p;
-  }
-  return 'Other';
+  return (adName || 'Unknown').trim();
 }
 
 function computeCreatorTotals(ads) {
@@ -495,26 +483,33 @@ export default function Dashboard() {
     setDemoByProduct(null);
   }, []);
 
-  const productTotals = useMemo(() => metaAds ? computeProductTotals(metaAds) : {}, [metaAds]);
+  const dateFilteredAds = useMemo(() => {
+    if (!metaAds) return null;
+    let ads = metaAds;
+    if (dateFrom) ads = ads.filter(a => !a.date || a.date >= dateFrom);
+    if (dateTo) ads = ads.filter(a => !a.date || a.date <= dateTo);
+    return ads;
+  }, [metaAds, dateFrom, dateTo]);
+
+  const productTotals = useMemo(() => (dateFilteredAds || metaAds) ? computeProductTotals(dateFilteredAds || metaAds) : {}, [dateFilteredAds, metaAds]);
 
   const presentProducts = useMemo(() => PRODUCTS.filter((p) => p === "All Products" || productTotals[p]), [productTotals]);
 
   const productData = productTotals[selectedProduct] || { spend: 0, sales: 0, purchases: 0, roas: 0 };
 
   const filteredAds = useMemo(() => {
-    if (!metaAds) return [];
-    let ads = selectedProduct !== "All Products" ? metaAds.filter((a) => a.product === selectedProduct) : metaAds;
+    const base = dateFilteredAds || metaAds;
+    if (!base) return [];
+    let ads = selectedProduct !== "All Products" ? base.filter((a) => a.product === selectedProduct) : base;
     if (searchQuery) { const q = searchQuery.toLowerCase(); ads = ads.filter((a) => a.name.toLowerCase().includes(q) || a.product.toLowerCase().includes(q)); }
     if (adTypeFilter !== "All") ads = ads.filter((a) => a.type === adTypeFilter);
     if (creatorFilter !== "All") ads = ads.filter((a) => extractCreator(a.name) === creatorFilter);
-    if (dateFrom) ads = ads.filter((a) => a.date && a.date >= dateFrom);
-    if (dateTo) ads = ads.filter((a) => a.date && a.date <= dateTo);
     return [...ads].sort((a, b) => sortDir === "desc" ? b[sortField] - a[sortField] : a[sortField] - b[sortField]);
-  }, [metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter, creatorFilter, dateFrom, dateTo]);
+  }, [dateFilteredAds, metaAds, selectedProduct, searchQuery, sortField, sortDir, adTypeFilter, creatorFilter]);
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
-  const uniqueCreators = useMemo(() => { if (!metaAds) return []; const s = new Set(metaAds.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [metaAds]);
-  const creatorTotals = useMemo(() => metaAds ? computeCreatorTotals(creatorProductFilter !== "All Products" ? metaAds.filter(a => a.product === creatorProductFilter) : (dateFrom || dateTo ? filteredAds : metaAds)) : [], [metaAds, creatorProductFilter, filteredAds, dateFrom, dateTo]);
+  const uniqueCreators = useMemo(() => { const base = dateFilteredAds || metaAds; if (!base) return []; const s = new Set(base.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [dateFilteredAds, metaAds]);
+  const creatorTotals = useMemo(() => { const base = dateFilteredAds || metaAds; if (!base) return []; const pool = creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base; return computeCreatorTotals(pool); }, [dateFilteredAds, metaAds, creatorProductFilter]);
   const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
   const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
@@ -696,7 +691,11 @@ export default function Dashboard() {
           </div>
         )}
         {hasData && activeView === "looker" && (
-        <LookerStudioView metaAds={metaAds} preBlended={isDemo ? demoBlended : null} preByProduct={isDemo ? demoByProduct : null} />
+        <LookerStudioView
+          metaAds={metaAds}
+          preBlended={(() => { const b = isDemo ? demoBlended : null; if (!b) return null; if (dateFrom || dateTo) return b.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)); return b; })()}
+          preByProduct={(() => { const bp = isDemo ? demoByProduct : null; if (!bp) return null; if (dateFrom || dateTo) return bp.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)); return bp; })()}
+        />
       )}
 
       {/* ── DASHBOARD ── */}
