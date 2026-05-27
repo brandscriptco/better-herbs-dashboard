@@ -491,7 +491,32 @@ export default function Dashboard() {
     return ads;
   }, [metaAds, dateFrom, dateTo]);
 
-  const productTotals = useMemo(() => (dateFilteredAds || metaAds) ? computeProductTotals(dateFilteredAds || metaAds) : {}, [dateFilteredAds, metaAds]);
+  const productTotals = useMemo(() => {
+    // In demo mode: derive KPIs from daily by-product data (respects date filter properly)
+    if (isDemo && demoByProduct) {
+      const rows = demoByProduct.filter(r =>
+        (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)
+      );
+      const result = {};
+      for (const row of rows) {
+        if (!result[row.product]) result[row.product] = { spend: 0, sales: 0, purchases: 0 };
+        result[row.product].spend += row.spend;
+        result[row.product].sales += row.sales;
+        result[row.product].purchases += row.purchases;
+      }
+      const allSpend = Object.values(result).reduce((s, d) => s + d.spend, 0);
+      const allSales  = Object.values(result).reduce((s, d) => s + d.sales,  0);
+      const allPurch  = Object.values(result).reduce((s, d) => s + d.purchases, 0);
+      result["All Products"] = { spend: allSpend, sales: allSales, purchases: allPurch, roas: allSpend > 0 ? allSales / allSpend : 0 };
+      for (const p in result) {
+        if (p !== "All Products") result[p].roas = result[p].spend > 0 ? result[p].sales / result[p].spend : 0;
+      }
+      return result;
+    }
+    // For uploaded Excel data: use ad-level rows filtered by date
+    const base = dateFilteredAds || metaAds;
+    return base ? computeProductTotals(base) : {};
+  }, [isDemo, demoByProduct, dateFrom, dateTo, dateFilteredAds, metaAds]);
 
   const presentProducts = useMemo(() => PRODUCTS.filter((p) => p === "All Products" || productTotals[p]), [productTotals]);
 
