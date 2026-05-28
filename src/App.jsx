@@ -603,7 +603,7 @@ export default function Dashboard() {
   const filteredAds = useMemo(() => {
     const base = scaledDemoAds || metaAds;
     if (!base) return [];
-    let ads = (selectedProduct !== "All Products" ? base.filter((a) => a.product === selectedProduct) : base).filter(a => !a.name.toLowerCase().includes('post id'));
+    let ads = (selectedProduct !== "All Products" ? base.filter((a) => a.product === selectedProduct) : base).filter(a => !a.name.toLowerCase().includes('post id') && !a.name.toLowerCase().includes('mothers day'));
     if (searchQuery) { const q = searchQuery.toLowerCase(); ads = ads.filter((a) => a.name.toLowerCase().includes(q) || a.product.toLowerCase().includes(q)); }
     if (adTypeFilter !== "All") ads = ads.filter((a) => a.type === adTypeFilter);
     if (creatorFilter !== "All") ads = ads.filter((a) => extractCreator(a.name) === creatorFilter);
@@ -612,7 +612,7 @@ export default function Dashboard() {
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
   const uniqueCreators = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const s = new Set(base.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [scaledDemoAds, metaAds]);
-  const creatorTotals = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const pool = (creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base).filter(a => !a.name.toLowerCase().includes('post id')); return computeCreatorTotals(pool); }, [scaledDemoAds, metaAds, creatorProductFilter]);
+  const creatorTotals = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const pool = (creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base).filter(a => !a.name.toLowerCase().includes('post id') && !a.name.toLowerCase().includes('mothers day')); return computeCreatorTotals(pool); }, [scaledDemoAds, metaAds, creatorProductFilter]);
   const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
   const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
