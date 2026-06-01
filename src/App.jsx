@@ -601,13 +601,26 @@ export default function Dashboard() {
       const rangeSpend = inRange.reduce((s, r) => s + r.spend, 0);
       productScale[product] = totalSpend > 0 ? rangeSpend / totalSpend : 0;
     }
-    // Fallback scale for any unmapped product
+    // Also compute actual ROAS per product for the selected period
+    const productRoas = {};
+    for (const product of products) {
+      const inRange = demoByProduct.filter(r => r.product === product && (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
+      const rangeSpend = inRange.reduce((s, r) => s + r.spend, 0);
+      const rangeSales = inRange.reduce((s, r) => s + r.sales, 0);
+      productRoas[product] = rangeSpend > 0 ? rangeSales / rangeSpend : 0;
+    }
+    // Fallback scale/roas for any unmapped product
     const allTotal = demoByProduct.reduce((s, r) => s + r.spend, 0);
     const allRange = demoByProduct.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).reduce((s, r) => s + r.spend, 0);
     const overallScale = allTotal > 0 ? allRange / allTotal : 0;
+    const allRangeSales = demoByProduct.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).reduce((s, r) => s + r.sales, 0);
+    const overallRoas = allRange > 0 ? allRangeSales / allRange : 0;
     return metaAds.map(ad => {
       const scale = productScale[ad.product] ?? overallScale;
-      return { ...ad, spend: ad.spend * scale, sales: ad.sales * scale, purchases: Math.round(ad.purchases * scale), add_to_cart: Math.round((ad.add_to_cart || 0) * scale), initiate_checkout: Math.round((ad.initiate_checkout || 0) * scale), impressions: Math.round((ad.impressions || 0) * scale), outbound_clicks: Math.round((ad.outbound_clicks || 0) * scale), roas: ad.spend > 0 ? (ad.sales * scale) / (ad.spend * scale) : 0 };
+      const periodRoas = productRoas[ad.product] ?? overallRoas;
+      const scaledSpend = ad.spend * scale;
+      const scaledSales = scaledSpend * periodRoas;
+      return { ...ad, spend: scaledSpend, sales: scaledSales, purchases: Math.round(ad.purchases * scale), add_to_cart: Math.round((ad.add_to_cart || 0) * scale), initiate_checkout: Math.round((ad.initiate_checkout || 0) * scale), impressions: Math.round((ad.impressions || 0) * scale), outbound_clicks: Math.round((ad.outbound_clicks || 0) * scale), roas: periodRoas };
     });
   }, [isDemo, metaAds, demoByProduct, dateFrom, dateTo, dateFilteredAds]);
 
