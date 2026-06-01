@@ -601,26 +601,15 @@ export default function Dashboard() {
       const rangeSpend = inRange.reduce((s, r) => s + r.spend, 0);
       productScale[product] = totalSpend > 0 ? rangeSpend / totalSpend : 0;
     }
-    // Also compute actual ROAS per product for the selected period
-    const productRoas = {};
-    for (const product of products) {
-      const inRange = demoByProduct.filter(r => r.product === product && (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
-      const rangeSpend = inRange.reduce((s, r) => s + r.spend, 0);
-      const rangeSales = inRange.reduce((s, r) => s + r.sales, 0);
-      productRoas[product] = rangeSpend > 0 ? rangeSales / rangeSpend : 0;
-    }
-    // Fallback scale/roas for any unmapped product
+    // Fallback scale for any unmapped product
     const allTotal = demoByProduct.reduce((s, r) => s + r.spend, 0);
     const allRange = demoByProduct.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).reduce((s, r) => s + r.spend, 0);
     const overallScale = allTotal > 0 ? allRange / allTotal : 0;
-    const allRangeSales = demoByProduct.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo)).reduce((s, r) => s + r.sales, 0);
-    const overallRoas = allRange > 0 ? allRangeSales / allRange : 0;
     return metaAds.map(ad => {
       const scale = productScale[ad.product] ?? overallScale;
-      const periodRoas = productRoas[ad.product] ?? overallRoas;
       const scaledSpend = ad.spend * scale;
-      const scaledSales = scaledSpend * periodRoas;
-      return { ...ad, spend: scaledSpend, sales: scaledSales, purchases: Math.round(ad.purchases * scale), add_to_cart: Math.round((ad.add_to_cart || 0) * scale), initiate_checkout: Math.round((ad.initiate_checkout || 0) * scale), impressions: Math.round((ad.impressions || 0) * scale), outbound_clicks: Math.round((ad.outbound_clicks || 0) * scale), roas: periodRoas };
+      const scaledSales = ad.sales * scale;
+      return { ...ad, spend: scaledSpend, sales: scaledSales, purchases: Math.round(ad.purchases * scale), add_to_cart: Math.round((ad.add_to_cart || 0) * scale), initiate_checkout: Math.round((ad.initiate_checkout || 0) * scale), impressions: Math.round((ad.impressions || 0) * scale), outbound_clicks: Math.round((ad.outbound_clicks || 0) * scale), roas: scaledSpend > 0 ? scaledSales / scaledSpend : 0 };
     });
   }, [isDemo, metaAds, demoByProduct, dateFrom, dateTo, dateFilteredAds]);
 
@@ -636,29 +625,7 @@ export default function Dashboard() {
 
   const maxSpend = useMemo(() => filteredAds.reduce((m, a) => Math.max(m, a.spend), 0), [filteredAds]);
   const uniqueCreators = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const s = new Set(base.map(a => extractCreator(a.name))); return ["All", ...Array.from(s).sort()]; }, [scaledDemoAds, metaAds]);
-  const creatorTotals = useMemo(() => {
-    const base = scaledDemoAds || metaAds;
-    if (!base) return [];
-    const pool = (creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base);
-    const totals = computeCreatorTotals(pool);
-    // Override ROAS with actual period ROAS from daily data (fixes ROAS being static when date range changes)
-    if (isDemo && demoByProduct) {
-      const periodProductRoas = {};
-      ["Brainify Drops","Brainify Powder","Flowjoy","Lactify","Mamafy"].forEach(product => {
-        const inRange = demoByProduct.filter(r => r.product === product && (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
-        const sp = inRange.reduce((s,r) => s+r.spend, 0);
-        const sa = inRange.reduce((s,r) => s+r.sales, 0);
-        periodProductRoas[product] = sp > 0 ? sa/sp : 0;
-      });
-      return totals.map(creator => {
-        const cAds = pool.filter(a => extractCreator(a.name) === creator.creator);
-        const totalSpend = cAds.reduce((s,a) => s+a.spend, 0);
-        const weightedSales = cAds.reduce((s,a) => s + a.spend * (periodProductRoas[a.product] || creator.roas), 0);
-        return { ...creator, roas: totalSpend > 0 ? weightedSales/totalSpend : creator.roas };
-      });
-    }
-    return totals;
-  }, [scaledDemoAds, metaAds, creatorProductFilter, isDemo, demoByProduct, dateFrom, dateTo]);
+  const creatorTotals = useMemo(() => { const base = scaledDemoAds || metaAds; if (!base) return []; const pool = (creatorProductFilter !== "All Products" ? base.filter(a => a.product === creatorProductFilter) : base); return computeCreatorTotals(pool); }, [scaledDemoAds, metaAds, creatorProductFilter]);
   const activeFiltersCount = [adTypeFilter !== "All", creatorFilter !== "All", dateFrom !== "", dateTo !== "", searchQuery !== ""].filter(Boolean).length;
   const clearAllFilters = () => { setAdTypeFilter("All"); setCreatorFilter("All"); setDateFrom(""); setDateTo(""); setSearchQuery(""); };
 
