@@ -57,6 +57,10 @@ function extractCreator(adName) {
   if (!adName) return 'Unknown';
   let name = adName.trim();
 
+  // Strip date suffix first: "| 13/05/2026", "| 1/04/20206", " 19/05/2026"
+  name = name.replace(/\s*\|\s*\d{1,2}\/\d{1,2}\/\d{4,6}.*$/, '').trim();
+  name = name.replace(/\s+\d{2}\/\d{2}\/\d{4}\s*$/, '').trim();
+
   // Handle underscore separator: "Lactify_Dr. Nayana" -> "Dr. Nayana"
   const underIdx = name.indexOf('_');
   if (underIdx > 0 && !name.slice(0, underIdx).includes(' ')) {
@@ -77,21 +81,12 @@ function extractCreator(adName) {
     if (dashIdx2 > 0) name = name.slice(dashIdx2 + 2).trim();
   }
 
-  // Strip date suffix: "| 13/05/2026" or "| 1/04/20206"
-  name = name.replace(/\s*\|\s*\d{1,2}\/\d{1,2}\/\d{4,6}.*$/, '').trim();
-
-  // If another " - " remains (e.g. "Dr. Samra - Edit 2"), keep only first segment
-  const nextDash = name.indexOf(' - ');
-  if (nextDash > 0) name = name.slice(0, nextDash).trim();
-
   // Strip trailing noise tokens
   name = name
     .replace(/\s+Video$/i, '')
     .replace(/\s+\(Blessings\)/i, '')
     .replace(/\s+\(Copycat[^)]*\)/i, '')
     .replace(/\s+Ad\s*code\s*$/i, '')
-    .replace(/\s+\(Direct\)\s*$/i, '')
-    .replace(/\s+\(Nutrition\)\s*$/i, '')
     .trim();
 
   return name || adName.trim();
