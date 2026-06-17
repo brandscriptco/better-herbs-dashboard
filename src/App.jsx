@@ -341,20 +341,19 @@ function UploadZone({ onData, onDemo }) {
 // ─── UI: LOOKER STUDIO VIEW ──────────────────────────────────────────────────
 function LookerStudioView({ metaAds, preBlended, preByProduct }) {
   const [productFilter, setProductFilter] = useState("All Products");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const allDates = useMemo(() => (preBlended || []).map(r => r.date).filter(Boolean).sort(), [preBlended]);
   const minDate = allDates[0] || "";
   const maxDate = allDates[allDates.length - 1] || "";
   const availableProducts = useMemo(() => ["All Products", ...Array.from(new Set((preByProduct || []).map(r => r.product))).filter(Boolean).sort()], [preByProduct]);
   const blended = useMemo(() => {
     const rows = preBlended || computeDailyBlended(metaAds);
-    return rows.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
-  }, [metaAds, preBlended, dateFrom, dateTo]);
+    return selectedDate ? rows.filter(r => r.date === selectedDate) : rows;
+  }, [metaAds, preBlended, selectedDate]);
   const byProduct = useMemo(() => {
     const rows = preByProduct || computeDailyByProduct(metaAds);
-    return rows.filter(r => (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo));
-  }, [metaAds, preByProduct, dateFrom, dateTo]);
+    return selectedDate ? rows.filter(r => r.date === selectedDate) : rows;
+  }, [metaAds, preByProduct, selectedDate]);
   const hasDate = blended.length > 0 && blended[0].date !== "Unknown";
 
   const thStyle = {
@@ -374,24 +373,18 @@ function LookerStudioView({ metaAds, preBlended, preByProduct }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
 
       {/* ── Date Filter ── */}
-      <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", padding: "4px 0 0" }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", padding: "4px 0 0" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <label style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(255,255,255,0.35)" }}>From</label>
-          <input type="date" value={dateFrom} min={minDate} max={dateTo || maxDate} onChange={e => setDateFrom(e.target.value)} style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer", fontFamily: "inherit", colorScheme: "dark" }} />
+          <label style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(255,255,255,0.35)" }}>Select Date</label>
+          <input type="date" value={selectedDate} min={minDate} max={maxDate} onChange={e => setSelectedDate(e.target.value)} style={{ padding: "7px 12px", borderRadius: 7, border: `1px solid ${selectedDate ? "rgba(92,164,247,0.4)" : "rgba(255,255,255,0.12)"}`, background: selectedDate ? "rgba(92,164,247,0.08)" : "rgba(255,255,255,0.05)", color: "#e8e6f0", fontSize: 13, outline: "none", cursor: "pointer", fontFamily: "inherit", colorScheme: "dark" }} />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <label style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px", color: "rgba(255,255,255,0.35)" }}>To</label>
-          <input type="date" value={dateTo} min={dateFrom || minDate} max={maxDate} onChange={e => setDateTo(e.target.value)} style={{ padding: "6px 10px", borderRadius: 7, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)", color: "#e8e6f0", fontSize: 12, outline: "none", cursor: "pointer", fontFamily: "inherit", colorScheme: "dark" }} />
-        </div>
-        {(dateFrom || dateTo) && (
-          <button onClick={() => { setDateFrom(""); setDateTo(""); }} style={{ padding: "7px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.08)", color: "#f87171", fontFamily: "inherit" }}>✕ Clear dates</button>
+        {selectedDate && (
+          <button onClick={() => setSelectedDate("")} style={{ marginTop: 18, padding: "7px 14px", borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1px solid rgba(248,113,113,0.3)", background: "rgba(248,113,113,0.08)", color: "#f87171", fontFamily: "inherit" }}>✕ Show all dates</button>
         )}
-        {(dateFrom || dateTo) && (
-          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", paddingBottom: 6 }}>
-            {dateFrom && dateTo ? dateFrom + " → " + dateTo : dateFrom ? "From " + dateFrom : "Until " + dateTo}
-          </span>
+        {selectedDate && (
+          <span style={{ marginTop: 18, fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Showing data for {selectedDate}</span>
         )}
-        {minDate && <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(255,255,255,0.2)", paddingBottom: 6 }}>Data: {minDate} → {maxDate}</span>}
+        {minDate && !selectedDate && <span style={{ marginTop: 18, fontSize: 11, color: "rgba(255,255,255,0.2)" }}>Available: {minDate} → {maxDate}</span>}
       </div>
 
       {/* ── Blended Day-wise ── */}
